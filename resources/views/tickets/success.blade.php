@@ -28,7 +28,8 @@
                     @else
                         <p style="margin-bottom: 8px;"><strong>Company:</strong> {{ $ticket->company_name }}</p>
                         <p style="margin-bottom: 8px;"><strong>Email:</strong> {{ $ticket->company_email }}</p>
-                        <p style="margin-bottom: 8px;"><strong>Max Attendees:</strong> 8 People</p>
+                        <p style="margin-bottom: 8px;"><strong>Phone:</strong> {{ $ticket->company_phone }}</p>
+                        <p style="margin-bottom: 8px;"><strong>Attendees:</strong> {{ $ticket->number_of_attendees }} {{ $ticket->number_of_attendees == 1 ? 'Person' : 'People' }}</p>
                     @endif
                     <p style="margin-bottom: 8px;"><strong>Ticket ID:</strong> {{ $ticket->uuid }}</p>
                     <p><strong>Amount Paid:</strong> KES {{ number_format($ticket->amount, 0) }}</p>
