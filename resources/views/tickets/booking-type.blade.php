@@ -18,7 +18,7 @@
             <h2 style="text-align: center; color: var(--color-primary); margin-bottom: 40px;">Select Booking Type</h2>
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
-                <div class="card" style="text-align: center; cursor: pointer; transition: transform 0.3s;" onclick="window.location='{{ route('booking.individual', $event->id) }}'">
+                <div class="card" style="text-align: center; cursor: pointer; transition: transform 0.3s;" onclick="window.location=`{{ route('booking.individual', $event->id) }}`">
                     <div style="width: 80px; height: 80px; margin: 0 auto 20px; background: var(--color-muted); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
                         <i class="fas fa-user" style="font-size: 40px; color: var(--color-primary);"></i>
                     </div>
@@ -27,7 +27,7 @@
                     <p style="font-size: 24px; font-weight: 600; color: var(--color-primary);">KES {{ number_format($event->individual_price, 0) }}</p>
                 </div>
                 
-                <div class="card" style="text-align: center; cursor: pointer; transition: transform 0.3s;" onclick="window.location='{{ route('booking.corporate', $event->id) }}'">
+                <div class="card" style="text-align: center; cursor: pointer; transition: transform 0.3s;" onclick="window.location=`{{ route('booking.corporate', $event->id) }}`">
                     <div style="width: 80px; height: 80px; margin: 0 auto 20px; background: var(--color-muted); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
                         <i class="fas fa-users" style="font-size: 40px; color: var(--color-primary);"></i>
                     </div>

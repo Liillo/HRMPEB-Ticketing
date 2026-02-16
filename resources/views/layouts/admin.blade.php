@@ -290,15 +290,32 @@
         
         .card {
             background: var(--bg-secondary);
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 2px 8px rgba(124, 106, 70, 0.1);
+            border-radius: 10px;
+            padding: 18px;
+            box-shadow: 0 1px 6px rgba(124, 106, 70, 0.08);
         }
         
         @media (max-width: 768px) {
             .card {
-                padding: 16px;
-                overflow-x: auto;
+                padding: 14px;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+        }
+
+        .page-content {
+            padding: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .page-content {
+                padding: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .page-content {
+                padding: 12px;
             }
         }
         
@@ -454,7 +471,7 @@
                 </div>
             </div>
             
-            <div style="padding: 24px;">
+            <div class="page-content">
                 @if(session('success'))
                     <div class="alert alert-success">{{ session('success') }}</div>
                 @endif

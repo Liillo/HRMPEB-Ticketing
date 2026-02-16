@@ -78,7 +78,7 @@ function checkPaymentStatus() {
     
     console.log('Checking payment status... Attempt:', checkCount);
     
-    fetch('{{ route('payment.check', $ticket->uuid) }}', {
+    fetch("{{ route('payment.check', $ticket->uuid) }}", {
         method: 'GET',
         headers: {
             'Accept': 'application/json',
@@ -138,7 +138,7 @@ function checkPaymentStatus() {
                 </small>
             `;
             setTimeout(() => {
-                window.location.href = '{{ route('payment', $ticket->uuid) }}';
+                window.location.href = "{{ route('payment', $ticket->uuid) }}";
             }, 3000);
         }
     })

@@ -2,40 +2,152 @@
 
 @section('title', 'Admin Dashboard')
 
+@push('styles')
+<style>
+    .dashboard-wrap {
+        padding: 0;
+    }
+
+    .stat-card {
+        position: relative;
+        border: 1px solid var(--color-border);
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: var(--stat-accent, var(--color-primary));
+    }
+
+    .stat-card--revenue {
+        --stat-accent: var(--color-primary);
+        background: linear-gradient(180deg, #fcf7ee 0%, #ffffff 100%);
+    }
+
+    .stat-card--paid {
+        --stat-accent: var(--color-success);
+        background: linear-gradient(180deg, #eef8f1 0%, #ffffff 100%);
+    }
+
+    .stat-card--pending {
+        --stat-accent: #b07a2f;
+        background: linear-gradient(180deg, #fff7ea 0%, #ffffff 100%);
+    }
+
+    .stat-card--failed {
+        --stat-accent: var(--color-error);
+        background: linear-gradient(180deg, #fdf1ef 0%, #ffffff 100%);
+    }
+
+    .stat-card--total {
+        --stat-accent: var(--color-accent);
+        background: linear-gradient(180deg, #faf4eb 0%, #ffffff 100%);
+    }
+
+    .stat-card--scans {
+        --stat-accent: #4f7388;
+        background: linear-gradient(180deg, #eef5f8 0%, #ffffff 100%);
+    }
+
+    .metrics-section {
+        margin-bottom: 18px;
+    }
+
+    .metrics-title {
+        color: var(--text-secondary);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+    }
+
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 14px;
+    }
+
+    .stat-card h3 {
+        color: var(--text-secondary);
+        font-size: 13px;
+        margin-bottom: 6px;
+    }
+
+    .stat-card p {
+        font-size: 30px;
+        font-weight: 600;
+        line-height: 1.2;
+    }
+
+    .stat-value {
+        color: var(--stat-accent, var(--color-primary));
+    }
+
+    @media (max-width: 768px) {
+        .metrics-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .stat-card h3 {
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .stat-card p {
+            font-size: 22px;
+        }
+    }
+</style>
+@endpush
+
 @section('content')
-<div style="padding: 24px;">
+<div class="dashboard-wrap">
     <h1 style="color: var(--color-primary); margin-bottom: 32px;">Dashboard</h1>
     
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 40px;">
-        <div class="card">
-            <h3 style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px;">Total Tickets</h3>
-            <p style="font-size: 36px; font-weight: 600; color: var(--color-primary);">{{ $stats['total_tickets'] }}</p>
+    <div class="metrics-section">
+        <div class="metrics-title">Payment</div>
+        <div class="metrics-grid">
+            <div class="card stat-card stat-card--revenue">
+                <h3>Total Revenue</h3>
+                <p class="stat-value">{{ number_format($stats['total_revenue'], 0) }}</p>
+                <small style="color: var(--text-secondary);">KES</small>
+            </div>
+            
+            <div class="card stat-card stat-card--paid">
+                <h3>Paid Tickets</h3>
+                <p class="stat-value">{{ $stats['paid_tickets'] }}</p>
+            </div>
+            
+            <div class="card stat-card stat-card--pending">
+                <h3>Pending Tickets</h3>
+                <p class="stat-value">{{ $stats['pending_tickets'] }}</p>
+            </div>
+            
+            <div class="card stat-card stat-card--failed">
+                <h3>Failed Tickets</h3>
+                <p class="stat-value">{{ $stats['failed_tickets'] }}</p>
+            </div>
         </div>
-        
-        <div class="card">
-            <h3 style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px;">Paid Tickets</h3>
-            <p style="font-size: 36px; font-weight: 600; color: var(--color-success);">{{ $stats['paid_tickets'] }}</p>
-        </div>
-        
-        <div class="card">
-            <h3 style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px;">Pending Tickets</h3>
-            <p style="font-size: 36px; font-weight: 600; color: #f0ad4e;">{{ $stats['pending_tickets'] }}</p>
-        </div>
-        
-        <div class="card">
-            <h3 style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px;">Total Revenue</h3>
-            <p style="font-size: 36px; font-weight: 600; color: var(--color-primary);">{{ number_format($stats['total_revenue'], 0) }}</p>
-            <small style="color: var(--text-secondary);">KES</small>
-        </div>
-        
-        <div class="card">
-            <h3 style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px;">Total Scans</h3>
-            <p style="font-size: 36px; font-weight: 600; color: var(--color-primary);">{{ $stats['total_scans'] }}</p>
-        </div>
-        
-        <div class="card">
-            <h3 style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px;">Failed Tickets</h3>
-            <p style="font-size: 36px; font-weight: 600; color: var(--color-error);">{{ $stats['failed_tickets'] }}</p>
+    </div>
+
+    <div class="metrics-section" style="margin-bottom: 28px;">
+        <div class="metrics-title">Tickets</div>
+        <div class="metrics-grid">
+            <div class="card stat-card stat-card--total">
+                <h3>Total Tickets</h3>
+                <p class="stat-value">{{ $stats['total_tickets'] }}</p>
+            </div>
+            
+            <div class="card stat-card stat-card--scans">
+                <h3>Total Scans</h3>
+                <p class="stat-value">{{ $stats['total_scans'] }}</p>
+            </div>
         </div>
     </div>
     

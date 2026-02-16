@@ -82,7 +82,7 @@
 
 <div class="card" style="max-width: 800px; margin-top: 24px; border: 2px solid var(--color-error);">
     <h3 style="color: var(--color-error); margin-bottom: 16px;">
-        <i class="fas fa-exclamation-triangle"></i> Danger Zone
+        <i class="fas fa-exclamation-triangle"></i> ALERT
     </h3>
     <p style="color: var(--text-secondary); margin-bottom: 16px;">
         Deleting this event will also delete all associated tickets and payments. This action cannot be undone.

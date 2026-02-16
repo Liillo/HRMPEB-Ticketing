@@ -30,6 +30,9 @@
             <button id="start-scan-btn" class="btn btn-primary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="startScanner()">
                 <i class="fas fa-camera"></i> Start Camera Scanner
             </button>
+            <button id="resume-scan-btn" class="btn btn-warning" style="width: 100%; display: none; margin-top: 10px;" onclick="resumeScanner()">
+                <i class="fas fa-redo"></i> Resume Camera Scanner
+            </button>
             <button id="stop-scan-btn" class="btn btn-danger" style="width: 100%; display: none; margin-top: 10px;" onclick="stopScanner()">
                 <i class="fas fa-stop"></i> Stop Scanner
             </button>
@@ -64,6 +67,7 @@ let lastScan = '';
 let scanTimeout;
 let isScanning = false;
 let processingScan = false;
+let scannerPausedAfterRead = false;
 
 // Auto-submit when barcode scanner inputs data
 document.getElementById('qr-input').addEventListener('input', function(e) {
@@ -82,10 +86,13 @@ async function startScanner() {
     }
 
     document.getElementById('start-scan-btn').style.display = 'none';
+    document.getElementById('resume-scan-btn').style.display = 'none';
     document.getElementById('stop-scan-btn').style.display = 'block';
     document.getElementById('qr-reader').style.display = 'block';
 
-    html5QrCode = new Html5Qrcode('qr-reader');
+    if (!html5QrCode) {
+        html5QrCode = new Html5Qrcode('qr-reader');
+    }
 
     const config = {
         fps: 10,
@@ -102,6 +109,7 @@ async function startScanner() {
             onScanError
         );
         isScanning = true;
+        scannerPausedAfterRead = false;
     } catch (err) {
         console.error('Camera error:', err);
         alert('Error accessing camera: ' + err);
@@ -109,21 +117,49 @@ async function startScanner() {
     }
 }
 
+function resumeScanner() {
+    lastScan = '';
+    startScanner();
+}
+
 function stopScanner() {
     if (html5QrCode && isScanning) {
         html5QrCode.stop().then(() => {
             isScanning = false;
+            scannerPausedAfterRead = false;
             document.getElementById('start-scan-btn').style.display = 'block';
+            document.getElementById('resume-scan-btn').style.display = 'none';
             document.getElementById('stop-scan-btn').style.display = 'none';
             document.getElementById('qr-reader').style.display = 'none';
         }).catch(err => {
             console.error('Error stopping scanner:', err);
         });
     } else {
+        scannerPausedAfterRead = false;
         document.getElementById('start-scan-btn').style.display = 'block';
+        document.getElementById('resume-scan-btn').style.display = 'none';
         document.getElementById('stop-scan-btn').style.display = 'none';
         document.getElementById('qr-reader').style.display = 'none';
     }
+}
+
+async function pauseScannerAfterSuccessfulRead() {
+    if (!html5QrCode || !isScanning || scannerPausedAfterRead) {
+        return;
+    }
+
+    try {
+        await html5QrCode.stop();
+    } catch (err) {
+        console.error('Error pausing scanner:', err);
+    }
+
+    isScanning = false;
+    scannerPausedAfterRead = true;
+    document.getElementById('start-scan-btn').style.display = 'none';
+    document.getElementById('resume-scan-btn').style.display = 'block';
+    document.getElementById('stop-scan-btn').style.display = 'none';
+    document.getElementById('qr-reader').style.display = 'none';
 }
 
 async function onScanSuccess(decodedText) {
@@ -140,17 +176,21 @@ async function onScanSuccess(decodedText) {
     }
 
     document.getElementById('qr-input').value = uuid;
-    await validateTicket(uuid);
+    const wasValid = await validateTicket(uuid);
 
-    if (navigator.vibrate) {
-        navigator.vibrate(120);
+    if (wasValid) {
+        await pauseScannerAfterSuccessfulRead();
+
+        if (navigator.vibrate) {
+            navigator.vibrate(120);
+        }
+    } else {
+        setTimeout(() => {
+            lastScan = '';
+        }, 1500);
     }
 
-    setTimeout(() => {
-        lastScan = '';
-        processingScan = false;
-        document.getElementById('qr-input').value = '';
-    }, 1200);
+    processingScan = false;
 }
 
 function onScanError(error) {
@@ -173,7 +213,7 @@ function validateTicket(qrCode) {
 
     resultDiv.style.display = 'none';
 
-    return fetch('{{ route('admin.scan') }}', {
+    return fetch("{{ route('admin.scan') }}", {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -214,15 +254,18 @@ function validateTicket(qrCode) {
             setTimeout(() => {
                 ticketInfoDiv.style.display = 'none';
             }, 5000);
+            return true;
         } else {
             showError(data.message);
             ticketInfoDiv.style.display = 'none';
+            return false;
         }
     })
     .catch(error => {
         console.error('Validation error:', error);
         showError('Error validating ticket. Please try again.');
         ticketInfoDiv.style.display = 'none';
+        return false;
     });
 }
 

@@ -10,7 +10,15 @@ class AdminMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
-        if (!Auth::check() || !Auth::user()->is_admin) {
+        if (!Auth::check()) {
+            return redirect()->guest(route('admin.login'));
+        }
+
+        if (!Auth::user()->is_admin) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
             return redirect()->route('admin.login')->with('error', 'Unauthorized access');
         }
 

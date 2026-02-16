@@ -6,12 +6,7 @@ use App\Models\Ticket;
 use App\Models\Scan;
 use App\Services\TicketService;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use App\Models\User;
-use App\Models\Booking;
-use App\Models\Event;
 
 
 class AdminController extends Controller
@@ -25,11 +20,18 @@ class AdminController extends Controller
         $this->ticketService = $ticketService;
     }
 
-    public function showLogin()
+    public function showLogin(Request $request)
     {
         if (Auth::check()) {
-            return redirect()->route('admin.dashboard');
+            if (Auth::user()->is_admin) {
+                return redirect()->route('admin.dashboard');
+            }
+
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
         }
+
         return view('admin.login');
     }
 
@@ -98,7 +100,10 @@ class AdminController extends Controller
                   ->orWhere('phone', 'like', "%{$search}%")
                   ->orWhere('company_name', 'like', "%{$search}%")
                   ->orWhere('company_email', 'like', "%{$search}%")
-                  ->orWhere('uuid', 'like', "%{$search}%");
+                  ->orWhere('uuid', 'like', "%{$search}%")
+                  ->orWhereHas('payments', function ($paymentQuery) use ($search) {
+                      $paymentQuery->where('mpesa_receipt', 'like', "%{$search}%");
+                  });
             });
         }
 

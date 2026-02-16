@@ -26,14 +26,14 @@
         @if($events->count() > 0)
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 30px; max-width: 1200px; margin: 0 auto;">
                 @foreach($events as $event)
-                <div class="card event-card" style="cursor: pointer; transition: transform 0.3s;" onclick="window.location='{{ route('booking.type', $event->id) }}'">
+                <div class="card event-card" style="cursor: pointer; transition: transform 0.3s;" onclick="window.location=`{{ route('booking.type', $event->id) }}`">
                     <h2 style="color: var(--color-primary); margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
                         <i class="fas fa-calendar-alt"></i> {{ $event->name }}
                     </h2>
                     
                     @if($event->description)
                     <p style="color: var(--text-secondary); margin-bottom: 20px; line-height: 1.6;">
-                        {{ Str::limit($event->description, 120) }}
+                        {{ \Illuminate\Support\Str::limit($event->description, 120) }}
                     </p>
                     @endif
                     

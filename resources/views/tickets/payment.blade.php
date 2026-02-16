@@ -113,7 +113,7 @@ document.getElementById('payment-form').addEventListener('submit', function(e) {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
     errorDiv.style.display = 'none';
     
-    fetch('{{ route('payment.initiate', $ticket->uuid) }}', {
+    fetch("{{ route('payment.initiate', $ticket->uuid) }}", {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -124,7 +124,7 @@ document.getElementById('payment-form').addEventListener('submit', function(e) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            window.location.href = '{{ route('payment.waiting', $ticket->uuid) }}';
+            window.location.href = "{{ route('payment.waiting', $ticket->uuid) }}";
         } else {
             errorDiv.textContent = data.message || 'Payment failed. Please try again.';
             errorDiv.style.display = 'block';

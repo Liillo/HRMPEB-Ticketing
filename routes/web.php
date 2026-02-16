@@ -36,6 +36,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/logout', [AdminController::class, 'logout'])->name('logout');
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
         Route::get('/tickets', [AdminController::class, 'tickets'])->name('tickets');
+        Route::get('/search', [AdminController::class, 'search'])->name('search');
         Route::get('/tickets/{id}', [AdminController::class, 'ticketDetail'])->name('ticket.detail');
         Route::get('/tickets/{id}/download', [AdminController::class, 'downloadTicket'])->name('ticket.download');
         Route::get('/validation', [AdminController::class, 'validation'])->name('validation');
