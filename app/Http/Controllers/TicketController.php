@@ -435,6 +435,7 @@ class TicketController extends Controller
 
         return redirect()
             ->route('ticket.show', $ticket->uuid)
+            ->with('hide_ticket_sent_notice', true)
             ->with('success', $request->boolean('resend_email')
                 ? 'Ticket found. We have resent the ticket email.'
                 : 'Ticket found successfully.');

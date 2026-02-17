@@ -14,7 +14,7 @@
             @php
                 $ticketEmail = $ticket->type === 'individual' ? $ticket->email : $ticket->company_email;
             @endphp
-            @if($ticketEmail)
+            @if($ticketEmail && !session('hide_ticket_sent_notice'))
                 <div class="alert alert-success" style="margin-bottom: 20px;">
                     <i class="fas fa-envelope"></i> Your ticket has been sent to <strong>{{ $ticketEmail }}</strong>.
                 </div>
