@@ -7,6 +7,7 @@ use App\Models\Scan;
 use App\Services\TicketService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 
 class AdminController extends Controller
@@ -90,32 +91,32 @@ class AdminController extends Controller
 
     public function tickets(Request $request)
     {
-        $query = Ticket::with(['payment', 'scans', 'latestScan.admin']);
+        $search = $request->search;
+        $status = $request->status ?? 'all';
+        $type = $request->type ?? 'all';
 
-        if ($request->has('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
-                  ->orWhere('company_name', 'like', "%{$search}%")
-                  ->orWhere('company_email', 'like', "%{$search}%")
-                  ->orWhere('uuid', 'like', "%{$search}%")
-                  ->orWhereHas('payments', function ($paymentQuery) use ($search) {
-                      $paymentQuery->where('mpesa_receipt', 'like', "%{$search}%");
-                  });
-            });
-        }
-
-        if ($request->has('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->has('type') && $request->type !== 'all') {
-            $query->where('type', $request->type);
-        }
-
-        $tickets = $query->orderBy('created_at', 'desc')->paginate(20);
+        $tickets = Ticket::with(['event', 'payment'])
+            ->when($search, function ($query, $search) {
+                return $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('email', 'like', '%' . $search . '%')
+                    ->orWhere('phone', 'like', '%' . $search . '%')
+                    ->orWhere('company_name', 'like', '%' . $search . '%')
+                    ->orWhere('company_email', 'like', '%' . $search . '%')
+                    ->orWhere('uuid', 'like', '%' . $search . '%')
+                    ->orWhereHas('payment', function ($q) use ($search) {  // ← singular
+                        $q->where('mpesa_receipt', 'like', '%' . $search . '%');
+                    });
+                });
+            })
+            ->when($status !== 'all', function ($query) use ($status) {
+                return $query->where('status', $status);
+            })
+            ->when($type !== 'all', function ($query) use ($type) {
+                return $query->where('type', $type);
+            })
+            ->latest()
+            ->paginate(20);
 
         return view('admin.tickets', compact('tickets'));
     }
@@ -137,6 +138,34 @@ class AdminController extends Controller
         $pdf = $this->ticketService->generateTicketPdf($ticket);
         
         return $pdf->download('ticket-' . $ticket->uuid . '.pdf');
+    }
+
+    public function resendTicket($id)
+    {
+        $ticket = Ticket::with('event')->findOrFail($id);
+
+        if ($ticket->status !== 'paid') {
+            return back()->with('error', 'Cannot resend an unpaid ticket.');
+        }
+
+        try {
+            $sent = $this->ticketService->sendTicketEmail($ticket);
+
+            if (!$sent) {
+                return back()->with('error', 'Ticket email could not be sent: missing recipient email.');
+            }
+
+            return back()->with('success', 'Ticket email resent successfully.');
+        } catch (\Throwable $e) {
+            Log::error('Admin ticket resend failed', [
+                'ticket_id' => $ticket->id,
+                'ticket_uuid' => $ticket->uuid,
+                'admin_id' => Auth::id(),
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->with('error', 'Failed to resend ticket email. Please try again.');
+        }
     }
 
     public function validation()

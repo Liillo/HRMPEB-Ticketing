@@ -23,6 +23,8 @@ Route::get('/check-payment/{ticket}', [TicketController::class, 'checkPaymentSta
 Route::get('/success/{ticket}', [TicketController::class, 'success'])->name('payment.success');
 
 // Ticket Routes
+Route::get('/ticket/retrieve', [TicketController::class, 'retrieveForm'])->name('ticket.retrieve.form');
+Route::post('/ticket/retrieve', [TicketController::class, 'retrieveTicket'])->name('ticket.retrieve');
 Route::get('/ticket/{uuid}', [TicketController::class, 'show'])->name('ticket.show');
 Route::get('/ticket/{uuid}/download', [TicketController::class, 'download'])->name('ticket.download');
 Route::get('/ticket/{uuid}/validate', [TicketController::class, 'viewValidation'])->name('ticket.validate');
@@ -39,6 +41,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/search', [AdminController::class, 'search'])->name('search');
         Route::get('/tickets/{id}', [AdminController::class, 'ticketDetail'])->name('ticket.detail');
         Route::get('/tickets/{id}/download', [AdminController::class, 'downloadTicket'])->name('ticket.download');
+        Route::post('/tickets/{id}/resend', [AdminController::class, 'resendTicket'])->name('ticket.resend');
         Route::get('/validation', [AdminController::class, 'validation'])->name('validation');
         Route::post('/scan', [AdminController::class, 'scanTicket'])->name('scan');
         

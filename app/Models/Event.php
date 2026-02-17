@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Event extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'name',
         'description',
@@ -19,26 +21,28 @@ class Event extends Model
     ];
 
     protected $casts = [
-        'event_date' => 'date',
+        'event_date' => 'datetime',
         'is_active' => 'boolean',
+        'individual_price' => 'decimal:2',
+        'corporate_price' => 'decimal:2',
     ];
 
-    public function tickets(): HasMany
+    public function tickets()
     {
         return $this->hasMany(Ticket::class);
     }
 
-    public function paidTickets(): HasMany
+    public function paidTickets()
     {
         return $this->hasMany(Ticket::class)->where('status', 'paid');
     }
 
-    public function scannedTicketsCount(): int
+    public function scannedTicketsCount()
     {
-        return $this->tickets()->where('scan_count', '>', 0)->count();
+        return $this->paidTickets()->where('scan_count', '>', 0)->count();
     }
 
-    public function unscannedTicketsCount(): int
+    public function unscannedTicketsCount()
     {
         return $this->paidTickets()->where('scan_count', 0)->count();
     }

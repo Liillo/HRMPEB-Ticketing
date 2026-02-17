@@ -382,4 +382,60 @@ class TicketController extends Controller
         $ticket = Ticket::where('uuid', $uuid)->with('event')->firstOrFail();
         return view('tickets.validate', compact('ticket'));
     }
+
+    public function retrieveForm()
+    {
+        return view('tickets.retrieve');
+    }
+
+    public function retrieveTicket(Request $request)
+    {
+        $data = $request->validate([
+            'email' => 'required|email',
+            'reference' => 'required|string|max:255',
+            'resend_email' => 'nullable|boolean',
+        ]);
+
+        $reference = trim($data['reference']);
+
+        $ticket = Ticket::where('status', 'paid')
+            ->where(function ($query) use ($data) {
+                $query->where('email', $data['email'])
+                    ->orWhere('company_email', $data['email']);
+            })
+            ->where(function ($query) use ($reference) {
+                $query->where('uuid', $reference)
+                    ->orWhere('phone', $reference)
+                    ->orWhere('company_phone', $reference);
+            })
+            ->first();
+
+        if (!$ticket) {
+            return back()
+                ->withInput()
+                ->with('error', 'No paid ticket matched the details provided.');
+        }
+
+        if ((bool) $request->boolean('resend_email')) {
+            try {
+                $this->ticketService->sendTicketEmail($ticket);
+            } catch (\Throwable $e) {
+                Log::error('Failed to resend ticket email from customer retrieve flow', [
+                    'ticket_id' => $ticket->id,
+                    'ticket_uuid' => $ticket->uuid,
+                    'error' => $e->getMessage(),
+                ]);
+
+                return back()
+                    ->withInput()
+                    ->with('error', 'Ticket found, but email resend failed. Please try again.');
+            }
+        }
+
+        return redirect()
+            ->route('ticket.show', $ticket->uuid)
+            ->with('success', $request->boolean('resend_email')
+                ? 'Ticket found. We have resent the ticket email.'
+                : 'Ticket found successfully.');
+    }
 }

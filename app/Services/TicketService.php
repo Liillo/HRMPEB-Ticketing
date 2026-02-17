@@ -2,8 +2,11 @@
 
 namespace App\Services;
 
+use App\Mail\TicketPurchased;
 use App\Models\Ticket;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
 class TicketService
@@ -35,5 +38,26 @@ class TicketService
         $pdf->setPaper('a4', 'portrait');
         
         return $pdf;
+    }
+
+    public function sendTicketEmail(Ticket $ticket): bool
+    {
+        $email = $ticket->type === 'individual'
+            ? $ticket->email
+            : $ticket->company_email;
+
+        if (!$email) {
+            Log::warning('Cannot send ticket email: no recipient email', [
+                'ticket_id' => $ticket->id,
+                'ticket_uuid' => $ticket->uuid,
+                'type' => $ticket->type,
+            ]);
+
+            return false;
+        }
+
+        Mail::to($email)->send(new TicketPurchased($ticket));
+
+        return true;
     }
 }
