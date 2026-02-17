@@ -90,7 +90,7 @@ class AdminController extends Controller
 
     public function tickets(Request $request)
     {
-        $query = Ticket::with('payment', 'scans');
+        $query = Ticket::with(['payment', 'scans', 'latestScan.admin']);
 
         if ($request->has('search')) {
             $search = $request->search;

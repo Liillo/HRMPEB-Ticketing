@@ -98,6 +98,7 @@
                     <th>Amount</th>
                     <th>Status</th>
                     <th>Scan Status</th>
+                    <th>Scanned By</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -145,6 +146,13 @@
                         @endif
                     </td>
                     <td>
+                        @if($ticket->scan_count > 0 && $ticket->latestScan)
+                            {{ $ticket->latestScan->admin ? $ticket->latestScan->admin->name : 'System' }}
+                        @else
+                            <span style="color: var(--text-secondary); font-size: 12px;">-</span>
+                        @endif
+                    </td>
+                    <td>
                         <a href="{{ route('admin.ticket.detail', $ticket->id) }}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">View</a>
                         @if($ticket->status === 'paid')
                         <a href="{{ route('admin.ticket.download', $ticket->id) }}" class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;">PDF</a>
@@ -153,7 +161,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="8" style="padding: 24px; text-align: center; color: var(--text-secondary);">No tickets found</td>
+                    <td colspan="9" style="padding: 24px; text-align: center; color: var(--text-secondary);">No tickets found</td>
                 </tr>
                 @endforelse
             </tbody>

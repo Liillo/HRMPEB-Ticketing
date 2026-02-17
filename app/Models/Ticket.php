@@ -60,6 +60,11 @@ class Ticket extends Model
         return $this->hasMany(Scan::class);
     }
 
+    public function latestScan(): HasOne
+    {
+        return $this->hasOne(Scan::class)->latestOfMany('scanned_at');
+    }
+
     public function canBeScanned(): bool
     {
         return $this->status === 'paid' && $this->scan_count < $this->max_scans;
