@@ -13,7 +13,7 @@
 
                 <h1 style="text-align: center; color: var(--color-primary); margin-bottom: 12px;">Retrieve Your Ticket</h1>
                 <p style="text-align: center; color: var(--text-secondary); margin-bottom: 24px;">
-                    Enter your email and ticket UUID or phone number to access your paid ticket.
+                    Enter your email and phone number to access your paid ticket.
                 </p>
 
                 <form method="POST" action="{{ route('ticket.retrieve') }}">
@@ -28,9 +28,9 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="reference">Ticket UUID or Phone Number</label>
-                        <input id="reference" type="text" name="reference" value="{{ old('reference') }}" required>
-                        @error('reference')
+                        <label for="phone">Phone Number</label>
+                        <input id="phone" type="text" name="phone" value="{{ old('phone') }}" required>
+                        @error('phone')
                             <span class="error">{{ $message }}</span>
                         @enderror
                     </div>

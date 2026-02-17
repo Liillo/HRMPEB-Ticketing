@@ -22,7 +22,7 @@
             </h1>
             <p style="font-size: 20px; color: var(--text-secondary);">Book your tickets for our exclusive events</p>
         </div>
-        
+
         @if($events->count() > 0)
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 30px; max-width: 1200px; margin: 0 auto;">
                 @foreach($events as $event)
@@ -77,6 +77,15 @@
                 <p style="color: var(--text-secondary);">Check back soon for upcoming events!</p>
             </div>
         @endif
+
+        <div style="max-width: 1200px; margin: 24px auto 0; text-align: center; padding-top: 14px; border-top: 1px solid var(--color-border);">
+            <p style="color: var(--text-secondary); margin: 0; font-size: 14px;">
+                Already paid and lost your ticket page?
+                <a href="{{ route('ticket.retrieve.form') }}" style="color: var(--color-primary); font-weight: 600; text-decoration: none;">
+                    Retrieve your ticket
+                </a>
+            </p>
+        </div>
     </div>
 </div>
 

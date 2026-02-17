@@ -49,6 +49,13 @@
     .admin-pagination .pagination li a:hover {
         background: var(--color-muted);
     }
+
+    .ticket-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
 </style>
 @endpush
 
@@ -161,13 +168,15 @@
                         @endif
                     </td>
                     <td>
-                        <a href="{{ route('admin.ticket.detail', $ticket->id) }}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">View</a>
-                        @if($ticket->status === 'paid')
-                            <form method="POST" action="{{ route('admin.ticket.resend', $ticket->id) }}" style="display: inline-block;">
-                                @csrf
-                                <button type="submit" class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;">Resend Ticket</button>
-                            </form>
-                        @endif
+                        <div class="ticket-actions">
+                            <a href="{{ route('admin.ticket.detail', $ticket->id) }}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">View</a>
+                            @if($ticket->status === 'paid')
+                                <form method="POST" action="{{ route('admin.ticket.resend', $ticket->id) }}" style="margin: 0;">
+                                    @csrf
+                                    <button type="submit" class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;">Resend Ticket</button>
+                                </form>
+                            @endif
+                        </div>
                     </td>
                 </tr>
                 @empty

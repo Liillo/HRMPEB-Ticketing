@@ -392,28 +392,29 @@ class TicketController extends Controller
     {
         $data = $request->validate([
             'email' => 'required|email',
-            'reference' => 'required|string|max:255',
+            'phone' => 'required|string|max:20',
             'resend_email' => 'nullable|boolean',
         ]);
 
-        $reference = trim($data['reference']);
+        $phone = trim($data['phone']);
 
-        $ticket = Ticket::where('status', 'paid')
+        $ticket = Ticket::with('event')
+            ->where('status', 'paid')
             ->where(function ($query) use ($data) {
                 $query->where('email', $data['email'])
                     ->orWhere('company_email', $data['email']);
             })
-            ->where(function ($query) use ($reference) {
-                $query->where('uuid', $reference)
-                    ->orWhere('phone', $reference)
-                    ->orWhere('company_phone', $reference);
+            ->where(function ($query) use ($phone) {
+                $query->where('phone', $phone)
+                    ->orWhere('company_phone', $phone);
             })
+            ->latest('updated_at')
             ->first();
 
         if (!$ticket) {
             return back()
                 ->withInput()
-                ->with('error', 'No paid ticket matched the details provided.');
+                ->with('error', 'No paid ticket matched the provided email and phone number.');
         }
 
         if ((bool) $request->boolean('resend_email')) {
