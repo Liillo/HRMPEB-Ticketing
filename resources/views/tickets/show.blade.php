@@ -73,6 +73,11 @@
                 <a href="{{ route('ticket.download', $ticket->uuid) }}" class="btn btn-primary" style="margin-right: 12px;">Download PDF</a>
                 <a href="{{ route('home') }}" class="btn btn-secondary">Back to Home</a>
             </div>
+
+            <p style="text-align: center; margin-top: 14px; color: var(--text-secondary); font-size: 14px;">
+                Need to retrieve another ticket?
+                <a href="{{ route('ticket.retrieve.form') }}" style="color: var(--color-primary); font-weight: 600;">Use ticket retrieval</a>.
+            </p>
         </div>
     </div>
 </div>

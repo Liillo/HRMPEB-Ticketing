@@ -4,14 +4,32 @@
 
 @push('styles')
 <style>
-    .dashboard-wrap {
-        padding: 0;
+    .dashboard-wrap { padding: 0; }
+    .dash-header { margin-bottom: 24px; }
+    .dash-title { color: var(--color-primary); margin-bottom: 6px; }
+    .dash-subtitle { color: var(--text-secondary); font-size: 14px; }
+
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+        margin-bottom: 26px;
+    }
+
+    .stat-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
     }
 
     .stat-card {
         position: relative;
         border: 1px solid var(--color-border);
-        overflow: hidden;
+        border-radius: 12px;
+        padding: 16px 18px;
+        background: #fff;
+        min-height: 108px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     .stat-card::before {
@@ -21,12 +39,13 @@
         top: 0;
         bottom: 0;
         width: 4px;
+        border-radius: 12px 0 0 12px;
         background: var(--stat-accent, var(--color-primary));
     }
 
-    .stat-card--revenue {
-        --stat-accent: var(--color-primary);
-        background: linear-gradient(180deg, #fcf7ee 0%, #ffffff 100%);
+    .stat-card--total {
+        --stat-accent: var(--color-accent);
+        background: linear-gradient(180deg, #faf4eb 0%, #ffffff 100%);
     }
 
     .stat-card--paid {
@@ -44,156 +63,196 @@
         background: linear-gradient(180deg, #fdf1ef 0%, #ffffff 100%);
     }
 
-    .stat-card--total {
-        --stat-accent: var(--color-accent);
-        background: linear-gradient(180deg, #faf4eb 0%, #ffffff 100%);
-    }
-
     .stat-card--scans {
         --stat-accent: #4f7388;
         background: linear-gradient(180deg, #eef5f8 0%, #ffffff 100%);
     }
 
-    .metrics-section {
-        margin-bottom: 18px;
+    .stat-card--revenue {
+        --stat-accent: var(--color-primary);
+        background: linear-gradient(180deg, #fcf7ee 0%, #ffffff 100%);
     }
 
-    .metrics-title {
+    .stat-link:hover .stat-card {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(45, 36, 22, 0.08);
+    }
+
+    .stat-label {
         color: var(--text-secondary);
         font-size: 12px;
-        letter-spacing: 0.08em;
         text-transform: uppercase;
+        letter-spacing: 0.05em;
         margin-bottom: 10px;
     }
 
-    .metrics-grid {
+    .stat-value {
+        font-size: 28px;
+        font-weight: 700;
+        line-height: 1;
+        color: var(--color-primary);
+    }
+
+    .stat-note {
+        margin-top: 6px;
+        font-size: 12px;
+        color: var(--text-secondary);
+    }
+
+    .lists-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        grid-template-columns: 1fr 1fr;
         gap: 14px;
     }
 
-    .stat-card h3 {
-        color: var(--text-secondary);
-        font-size: 13px;
-        margin-bottom: 6px;
+    .list-card {
+        border: 1px solid var(--color-border);
+        border-radius: 12px;
+        background: #fff;
+        overflow: hidden;
     }
 
-    .stat-card p {
-        font-size: 30px;
-        font-weight: 600;
-        line-height: 1.2;
+    .list-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--color-border);
     }
 
-    .stat-value {
-        color: var(--stat-accent, var(--color-primary));
+    .list-head h2 {
+        color: var(--color-primary);
+        margin: 0;
+        font-size: 17px;
     }
 
-    @media (max-width: 768px) {
-        .metrics-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 10px;
-        }
+    .list-body { padding: 0 12px 12px; }
 
-        .stat-card h3 {
-            font-size: 12px;
-            margin-bottom: 4px;
-        }
+    .list-item {
+        padding: 12px 6px;
+        border-bottom: 1px solid var(--color-border);
+    }
 
-        .stat-card p {
-            font-size: 22px;
-        }
+    .list-item:last-child { border-bottom: none; }
+
+    .list-main {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+    }
+
+    .list-id {
+        font-family: monospace;
+        color: var(--color-primary);
+        font-size: 12px;
+    }
+
+    .list-name { font-size: 14px; font-weight: 600; }
+    .list-meta { color: var(--text-secondary); font-size: 12px; }
+
+    @media (max-width: 1024px) {
+        .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .lists-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 640px) {
+        .metrics-grid { grid-template-columns: 1fr; }
+        .stat-card { min-height: 92px; }
+        .stat-value { font-size: 24px; }
     }
 </style>
 @endpush
 
 @section('content')
 <div class="dashboard-wrap">
-    <h1 style="color: var(--color-primary); margin-bottom: 32px;">Dashboard</h1>
-    
-    <div class="metrics-section">
-        <div class="metrics-title">Payment</div>
-        <div class="metrics-grid">
-            <div class="card stat-card stat-card--revenue">
-                <h3>Total Revenue</h3>
-                <p class="stat-value">{{ number_format($stats['total_revenue'], 0) }}</p>
-                <small style="color: var(--text-secondary);">KES</small>
-            </div>
-            
-            <div class="card stat-card stat-card--paid">
-                <h3>Paid Tickets</h3>
-                <p class="stat-value">{{ $stats['paid_tickets'] }}</p>
-            </div>
-            
-            <div class="card stat-card stat-card--pending">
-                <h3>Pending Tickets</h3>
-                <p class="stat-value">{{ $stats['pending_tickets'] }}</p>
-            </div>
-            
-            <div class="card stat-card stat-card--failed">
-                <h3>Failed Tickets</h3>
-                <p class="stat-value">{{ $stats['failed_tickets'] }}</p>
-            </div>
-        </div>
+    <div class="dash-header">
+        <h1 class="dash-title">Dashboard</h1>
     </div>
 
-    <div class="metrics-section" style="margin-bottom: 28px;">
-        <div class="metrics-title">Tickets</div>
-        <div class="metrics-grid">
-            <div class="card stat-card stat-card--total">
-                <h3>Total Tickets</h3>
-                <p class="stat-value">{{ $stats['total_tickets'] }}</p>
+    <div class="metrics-grid">
+        <a class="stat-link" href="{{ route('admin.tickets') }}">
+            <div class="stat-card stat-card--total">
+                <div class="stat-label">Total Tickets</div>
+                <div class="stat-value">{{ $stats['total_tickets'] }}</div>
             </div>
-            
-            <div class="card stat-card stat-card--scans">
-                <h3>Total Scans</h3>
-                <p class="stat-value">{{ $stats['total_scans'] }}</p>
+        </a>
+        <a class="stat-link" href="{{ route('admin.tickets', ['status' => 'paid']) }}">
+            <div class="stat-card stat-card--paid">
+                <div class="stat-label">Paid Tickets</div>
+                <div class="stat-value">{{ $stats['paid_tickets'] }}</div>
             </div>
-        </div>
+        </a>
+        <a class="stat-link" href="{{ route('admin.tickets', ['status' => 'pending']) }}">
+            <div class="stat-card stat-card--pending">
+                <div class="stat-label">Pending Tickets</div>
+                <div class="stat-value">{{ $stats['pending_tickets'] }}</div>
+            </div>
+        </a>
+        <a class="stat-link" href="{{ route('admin.tickets', ['status' => 'failed']) }}">
+            <div class="stat-card stat-card--failed">
+                <div class="stat-label">Failed Tickets</div>
+                <div class="stat-value">{{ $stats['failed_tickets'] }}</div>
+            </div>
+        </a>
+        <a class="stat-link" href="{{ route('admin.tickets', ['scan' => 'scanned']) }}">
+            <div class="stat-card stat-card--scans">
+                <div class="stat-label">Total Scans</div>
+                <div class="stat-value">{{ $stats['total_scans'] }}</div>
+            </div>
+        </a>
+        <a class="stat-link" href="{{ route('admin.tickets', ['status' => 'paid']) }}">
+            <div class="stat-card stat-card--revenue">
+                <div class="stat-label">Total Revenue</div>
+                <div class="stat-value">{{ number_format($stats['total_revenue'], 0) }}</div>
+                <div class="stat-note">KES</div>
+            </div>
+        </a>
     </div>
-    
-    <div class="card">
-        <h2 style="color: var(--color-primary); margin-bottom: 24px;">Recent Tickets</h2>
-        
-        <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse;">
-                <thead>
-                    <tr style="border-bottom: 2px solid var(--color-border);">
-                        <th style="text-align: left; padding: 12px;">ID</th>
-                        <th style="text-align: left; padding: 12px;">Type</th>
-                        <th style="text-align: left; padding: 12px;">Name/Company</th>
-                        <th style="text-align: left; padding: 12px;">Amount</th>
-                        <th style="text-align: left; padding: 12px;">Status</th>
-                        <th style="text-align: left; padding: 12px;">Date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($recent_tickets as $ticket)
-                    <tr style="border-bottom: 1px solid var(--color-border);">
-                        <td style="padding: 12px;">{{ substr($ticket->uuid, 0, 8) }}...</td>
-                        <td style="padding: 12px;">{{ ucfirst($ticket->type) }}</td>
-                        <td style="padding: 12px;">{{ $ticket->type === 'individual' ? $ticket->name : $ticket->company_name }}</td>
-                        <td style="padding: 12px;">KES {{ number_format($ticket->amount, 0) }}</td>
-                        <td style="padding: 12px;">
-                            <span style="padding: 4px 12px; border-radius: 12px; font-size: 12px; 
-                                @if($ticket->status === 'paid') background: #d4edda; color: #155724;
-                                @elseif($ticket->status === 'pending') background: #fff3cd; color: #856404;
-                                @else background: #f8d7da; color: #721c24; @endif">
-                                {{ ucfirst($ticket->status) }}
-                            </span>
-                        </td>
-                        <td style="padding: 12px;">{{ $ticket->created_at->format('M d, Y') }}</td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="6" style="padding: 24px; text-align: center; color: var(--text-secondary);">No tickets found</td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
+
+    <div class="lists-grid">
+        <div class="list-card">
+            <div class="list-head">
+                <h2>Recently Scanned</h2>
+                <a href="{{ route('admin.tickets', ['scan' => 'scanned']) }}" class="btn btn-secondary" style="padding: 6px 10px; font-size: 12px;">View all</a>
+            </div>
+            <div class="list-body">
+                @forelse($recent_scanned_tickets as $ticket)
+                    <div class="list-item">
+                        <div class="list-main">
+                            <div class="list-name">{{ $ticket->type === 'individual' ? $ticket->name : $ticket->company_name }}</div>
+                            <div class="list-id">{{ substr($ticket->uuid, 0, 10) }}...</div>
+                        </div>
+                        <div class="list-meta">
+                            {{ $ticket->latestScan && $ticket->latestScan->admin ? $ticket->latestScan->admin->name : 'System' }}
+                            · {{ $ticket->scans_max_scanned_at ? \Carbon\Carbon::parse($ticket->scans_max_scanned_at)->format('M d, g:i A') : '-' }}
+                        </div>
+                    </div>
+                @empty
+                    <div class="list-item"><div class="list-meta">No scanned tickets yet.</div></div>
+                @endforelse
+            </div>
         </div>
-        
-        <div style="margin-top: 20px; text-align: center;">
-            <a href="{{ route('admin.tickets') }}" class="btn btn-primary">View All Tickets</a>
+
+        <div class="list-card">
+            <div class="list-head">
+                <h2>Recently Paid</h2>
+                <a href="{{ route('admin.tickets', ['status' => 'paid']) }}" class="btn btn-secondary" style="padding: 6px 10px; font-size: 12px;">View all</a>
+            </div>
+            <div class="list-body">
+                @forelse($recent_paid_tickets as $ticket)
+                    <div class="list-item">
+                        <div class="list-main">
+                            <div class="list-name">{{ $ticket->type === 'individual' ? $ticket->name : $ticket->company_name }}</div>
+                            <div class="list-id">{{ substr($ticket->uuid, 0, 10) }}...</div>
+                        </div>
+                        <div class="list-meta">KES {{ number_format($ticket->amount, 0) }} · {{ $ticket->payment_max_updated_at ? \Carbon\Carbon::parse($ticket->payment_max_updated_at)->format('M d, g:i A') : $ticket->updated_at->format('M d, g:i A') }}</div>
+                    </div>
+                @empty
+                    <div class="list-item"><div class="list-meta">No paid tickets yet.</div></div>
+                @endforelse
+            </div>
         </div>
     </div>
 </div>

@@ -81,12 +81,23 @@ class AdminController extends Controller
             'total_revenue' => Ticket::where('status', 'paid')->sum('amount'),
         ];
 
-        $recent_tickets = Ticket::with('payment')
-            ->latest()
-            ->take(10)
+        $recent_scanned_tickets = Ticket::with(['payment', 'latestScan.admin'])
+            ->whereHas('scans')
+            ->withMax('scans', 'scanned_at')
+            ->orderByDesc('scans_max_scanned_at')
+            ->orderByDesc('id')
+            ->take(5)
             ->get();
 
-        return view('admin.dashboard', compact('stats', 'recent_tickets'));
+        $recent_paid_tickets = Ticket::with(['payment', 'latestScan.admin'])
+            ->where('status', 'paid')
+            ->withMax('payment', 'updated_at')
+            ->orderByDesc('payment_max_updated_at')
+            ->orderByDesc('id')
+            ->take(5)
+            ->get();
+
+        return view('admin.dashboard', compact('stats', 'recent_scanned_tickets', 'recent_paid_tickets'));
     }
 
     public function tickets(Request $request)
@@ -94,8 +105,9 @@ class AdminController extends Controller
         $search = $request->search;
         $status = $request->status ?? 'all';
         $type = $request->type ?? 'all';
+        $scanFilter = $request->scan ?? 'all';
 
-        $tickets = Ticket::with(['event', 'payment'])
+        $tickets = Ticket::with(['event', 'payment', 'latestScan.admin'])
             ->when($search, function ($query, $search) {
                 return $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', '%' . $search . '%')
@@ -114,6 +126,12 @@ class AdminController extends Controller
             })
             ->when($type !== 'all', function ($query) use ($type) {
                 return $query->where('type', $type);
+            })
+            ->when($scanFilter === 'scanned', function ($query) {
+                return $query->where('scan_count', '>', 0);
+            })
+            ->when($scanFilter === 'not_scanned', function ($query) {
+                return $query->where('scan_count', '=', 0);
             })
             ->latest()
             ->paginate(20);

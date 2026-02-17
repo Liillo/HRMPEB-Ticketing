@@ -66,18 +66,26 @@
             
             <div class="form-group" style="margin-bottom: 0;">
                 <select name="status">
-                    <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>All Status</option>
-                    <option value="paid" {{ request('status') == 'paid' ? 'selected' : '' }}>Paid</option>
-                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                    <option value="failed" {{ request('status') == 'failed' ? 'selected' : '' }}>Failed</option>
+                    <option value="all" {{ request('status', 'all') == 'all' ? 'selected' : '' }}>All Status</option>
+                    <option value="paid" {{ request('status', 'all') == 'paid' ? 'selected' : '' }}>Paid</option>
+                    <option value="pending" {{ request('status', 'all') == 'pending' ? 'selected' : '' }}>Pending</option>
+                    <option value="failed" {{ request('status', 'all') == 'failed' ? 'selected' : '' }}>Failed</option>
                 </select>
             </div>
             
             <div class="form-group" style="margin-bottom: 0;">
                 <select name="type">
-                    <option value="all" {{ request('type') == 'all' ? 'selected' : '' }}>All Types</option>
-                    <option value="individual" {{ request('type') == 'individual' ? 'selected' : '' }}>Individual</option>
-                    <option value="corporate" {{ request('type') == 'corporate' ? 'selected' : '' }}>Corporate</option>
+                    <option value="all" {{ request('type', 'all') == 'all' ? 'selected' : '' }}>All Types</option>
+                    <option value="individual" {{ request('type', 'all') == 'individual' ? 'selected' : '' }}>Individual</option>
+                    <option value="corporate" {{ request('type', 'all') == 'corporate' ? 'selected' : '' }}>Corporate</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+                <select name="scan">
+                    <option value="all" {{ request('scan', 'all') == 'all' ? 'selected' : '' }}>All Scan States</option>
+                    <option value="scanned" {{ request('scan', 'all') == 'scanned' ? 'selected' : '' }}>Scanned</option>
+                    <option value="not_scanned" {{ request('scan', 'all') == 'not_scanned' ? 'selected' : '' }}>Not Scanned</option>
                 </select>
             </div>
             
@@ -155,7 +163,10 @@
                     <td>
                         <a href="{{ route('admin.ticket.detail', $ticket->id) }}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">View</a>
                         @if($ticket->status === 'paid')
-                        <a href="{{ route('admin.ticket.download', $ticket->id) }}" class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;">PDF</a>
+                            <form method="POST" action="{{ route('admin.ticket.resend', $ticket->id) }}" style="display: inline-block;">
+                                @csrf
+                                <button type="submit" class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;">Resend Ticket</button>
+                            </form>
                         @endif
                     </td>
                 </tr>

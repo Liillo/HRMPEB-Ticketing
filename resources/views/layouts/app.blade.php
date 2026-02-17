@@ -198,6 +198,16 @@
     @stack('styles')
 </head>
 <body>
+    <div class="container" style="padding-bottom: 0;">
+        @if(session('success'))
+            <div class="alert alert-success">{{ session('success') }}</div>
+        @endif
+
+        @if(session('error'))
+            <div class="alert alert-error">{{ session('error') }}</div>
+        @endif
+    </div>
+
     @yield('content')
     @stack('scripts')
 </body>

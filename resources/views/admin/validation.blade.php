@@ -49,9 +49,6 @@
                 <i class="fas fa-keyboard"></i> Enter Ticket UUID or Scan with Barcode Scanner
             </label>
             <input type="text" id="qr-input" placeholder="Paste UUID or use barcode scanner" autofocus>
-            <small style="display: block; margin-top: 8px; color: var(--text-secondary);">
-                <i class="fas fa-info-circle"></i> Barcode scanners work automatically - just scan!
-            </small>
         </div>
         
         <button type="button" class="btn btn-secondary" style="width: 100%;" onclick="validateTicketManual()">

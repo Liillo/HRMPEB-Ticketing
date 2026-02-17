@@ -83,10 +83,6 @@
                 @if($ticket->status === 'paid')
                 <div style="margin-top: 24px;">
                     <a href="{{ route('admin.ticket.download', $ticket->id) }}" class="btn btn-primary">Download PDF</a>
-                    <form method="POST" action="{{ route('admin.ticket.resend', $ticket->id) }}" style="display: inline-block; margin-left: 8px;">
-                        @csrf
-                        <button type="submit" class="btn btn-secondary">Resend Ticket Email</button>
-                    </form>
                 </div>
                 @endif
             </div>
