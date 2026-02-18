@@ -15,7 +15,7 @@
                 <img
                     src="{{ asset('images/hrmpeb-logo.png') }}"
                     alt="HRMPEB Logo"
-                    style="max-width: 160px; width: 100%; height: auto;"
+                    style="max-width: 240px; width: 100%; height: auto;"
                 >
             </div>
             <h1 style="font-size: 48px; color: var(--color-primary); margin-bottom: 16px;">
