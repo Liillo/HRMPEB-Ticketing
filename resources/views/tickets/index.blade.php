@@ -79,10 +79,16 @@
         @endif
 
         <div style="max-width: 1200px; margin: 24px auto 0; text-align: center; padding-top: 14px; border-top: 1px solid var(--color-border);">
-            <p style="color: var(--text-secondary); margin: 0; font-size: 14px;">
-                Already paid and lost your ticket page?
+            <p style="color: var(--text-secondary); margin: 0 0 6px; font-size: 14px;">
+                Already paid and lost your ticket?
                 <a href="{{ route('ticket.retrieve.form') }}" style="color: var(--color-primary); font-weight: 600; text-decoration: none;">
                     Retrieve your ticket
+                </a>
+            </p>
+            <p style="color: var(--text-secondary); margin: 0; font-size: 14px;">
+                Need to complete a pending booking?
+                <a href="{{ route('payment.pending.form') }}" style="color: var(--color-primary); font-weight: 600; text-decoration: none;">
+                    Continue payment
                 </a>
             </p>
         </div>

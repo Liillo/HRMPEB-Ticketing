@@ -16,6 +16,8 @@ Route::post('/corporate-booking', [TicketController::class, 'storeCorporate'])->
 
 // Payment Routes
 Route::get('/payment', [TicketController::class, 'createPayment'])->name('payment.create');
+Route::get('/payment/pending', [TicketController::class, 'pendingPaymentForm'])->name('payment.pending.form');
+Route::post('/payment/pending', [TicketController::class, 'pendingPayment'])->name('payment.pending');
 Route::get('/payment/{ticket}', [TicketController::class, 'payment'])->name('payment');
 Route::post('/payment/{ticket}/initiate', [TicketController::class, 'initiatePayment'])->name('payment.initiate');
 Route::get('/waiting/{ticket}', [TicketController::class, 'waiting'])->name('payment.waiting');

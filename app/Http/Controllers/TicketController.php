@@ -148,6 +148,59 @@ class TicketController extends Controller
         return view('tickets.payment', compact('ticket'));
     }
 
+    public function pendingPaymentForm()
+    {
+        return view('tickets.pending-payment');
+    }
+
+    public function pendingPayment(Request $request)
+    {
+        $data = $request->validate([
+            'email' => 'required|email',
+            'phone' => 'required|string|max:20',
+        ]);
+
+        $pendingTicket = Ticket::where('status', 'pending')
+            ->where(function ($query) use ($data) {
+                $query->where('email', $data['email'])
+                    ->orWhere('company_email', $data['email']);
+            })
+            ->where(function ($query) use ($data) {
+                $query->where('phone', $data['phone'])
+                    ->orWhere('company_phone', $data['phone']);
+            })
+            ->latest('updated_at')
+            ->first();
+
+        if ($pendingTicket) {
+            return redirect()
+                ->route('payment', $pendingTicket->uuid)
+                ->with('success', 'Pending ticket found. Continue your payment.');
+        }
+
+        $paidTicket = Ticket::where('status', 'paid')
+            ->where(function ($query) use ($data) {
+                $query->where('email', $data['email'])
+                    ->orWhere('company_email', $data['email']);
+            })
+            ->where(function ($query) use ($data) {
+                $query->where('phone', $data['phone'])
+                    ->orWhere('company_phone', $data['phone']);
+            })
+            ->latest('updated_at')
+            ->first();
+
+        if ($paidTicket) {
+            return redirect()
+                ->route('ticket.show', $paidTicket->uuid)
+                ->with('success', 'Your ticket is already paid.');
+        }
+
+        return back()
+            ->withInput()
+            ->with('error', 'No pending ticket found for that email and phone number.');
+    }
+
     // Initiate M-Pesa payment
     public function initiatePayment(Request $request, $uuid)
     {
