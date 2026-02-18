@@ -119,7 +119,7 @@ class AdminController extends Controller
                         ->orWhereHas('payment', function ($paymentQuery) use ($search) {
                             $paymentQuery->where('mpesa_receipt', 'like', '%' . $search . '%');
                         })
-                        ->orWhereRaw("JSON_SEARCH(attendee_details, 'one', ?) IS NOT NULL", [$likeSearch]);
+                        ->orWhere('attendee_details', 'like', $likeSearch);
                 });
             })
             ->when($status !== 'all', function ($query) use ($status) {
@@ -363,7 +363,7 @@ class AdminController extends Controller
             ->orWhere('company_name', 'like', "%{$query}%")
             ->orWhere('company_email', 'like', "%{$query}%")
             ->orWhere('uuid', 'like', "%{$query}%")
-            ->orWhereRaw("JSON_SEARCH(attendee_details, 'one', ?) IS NOT NULL", [$likeQuery])
+            ->orWhere('attendee_details', 'like', $likeQuery)
             ->with('payment')
             ->get();
 

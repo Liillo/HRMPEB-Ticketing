@@ -78,7 +78,7 @@
             </div>
         @endif
 
-        <div style="max-width: 1200px; margin: 24px auto 0; text-align: center; padding-top: 14px; border-top: 1px solid var(--color-border);">
+        <div class="tickets-footer">
             <p style="color: var(--text-secondary); margin: 0 0 6px; font-size: 14px;">
                 Already paid and lost your ticket? Click here: 
                 <a href="{{ route('ticket.retrieve.form') }}" style="color: var(--color-primary); font-weight: 700; text-decoration: underline;">
@@ -99,6 +99,26 @@
 .event-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 6px 16px rgba(124, 106, 70, 0.2);
+}
+
+.tickets-footer {
+    width: min(96vw, 1500px);
+    margin: 28px 0 0;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    padding: 16px 18px;
+    background: linear-gradient(135deg, #f3e7d4 0%, #fff7eb 100%);
+    border: 1px solid rgba(124, 106, 70, 0.22);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(124, 106, 70, 0.08);
+}
+
+@media (max-width: 768px) {
+    .tickets-footer {
+        width: calc(100vw - 24px);
+    }
 }
 </style>
 @endsection
