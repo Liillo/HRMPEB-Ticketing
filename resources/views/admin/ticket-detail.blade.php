@@ -2,6 +2,28 @@
 
 @section('title', 'Ticket Details')
 
+@push('styles')
+<style>
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 14px;
+    }
+    .status-badge.status-paid {
+        background: #d4edda;
+        color: #155724;
+    }
+    .status-badge.status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+    .status-badge.status-failed {
+        background: #f8d7da;
+        color: #721c24;
+    }
+</style>
+@endpush
+
 @section('content')
 <div style="padding: 24px;">
     <div style="margin-bottom: 24px;">
@@ -64,7 +86,14 @@
                     <div style="margin-top: 8px; border: 1px solid var(--color-border); border-radius: 8px; overflow: hidden;">
                         @foreach($ticket->attendee_details as $index => $attendee)
                             <div style="padding: 10px 12px; border-bottom: 1px solid var(--color-border);">
-                                <div style="font-weight: 600;">{{ $index + 1 }}. {{ $attendee['name'] ?? 'N/A' }}</div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                                    <div style="font-weight: 600;">{{ $index + 1 }}. {{ $attendee['name'] ?? 'N/A' }}</div>
+                                    @if((bool) ($attendee['checked_in'] ?? false))
+                                        <span title="Checked in" style="color: var(--color-success); font-size: 14px;">
+                                            <i class="fas fa-check-circle"></i>
+                                        </span>
+                                    @endif
+                                </div>
                                 <div style="font-size: 13px; color: var(--text-secondary);">
                                     {{ $attendee['email'] ?? 'N/A' }} · {{ $attendee['phone'] ?? 'N/A' }}
                                 </div>
@@ -77,10 +106,12 @@
                 <div style="margin-bottom: 16px;">
                     <label style="color: var(--text-secondary); font-size: 14px;">Status</label>
                     <p style="margin-top: 4px;">
-                        <span style="padding: 4px 12px; border-radius: 12px; font-size: 14px; 
-                            @if($ticket->status === 'paid') background: #d4edda; color: #155724;
-                            @elseif($ticket->status === 'pending') background: #fff3cd; color: #856404;
-                            @else background: #f8d7da; color: #721c24; @endif">
+                        @php
+                            $ticketStatusClass = $ticket->status === 'paid'
+                                ? 'status-paid'
+                                : ($ticket->status === 'pending' ? 'status-pending' : 'status-failed');
+                        @endphp
+                        <span class="status-badge {{ $ticketStatusClass }}">
                             {{ ucfirst($ticket->status) }}
                         </span>
                     </p>
@@ -120,10 +151,12 @@
                 <div style="margin-bottom: 16px;">
                     <label style="color: var(--text-secondary); font-size: 14px;">Payment Status</label>
                     <p style="margin-top: 4px;">
-                        <span style="padding: 4px 12px; border-radius: 12px; font-size: 14px; 
-                            @if($ticket->payment->status === 'success') background: #d4edda; color: #155724;
-                            @elseif($ticket->payment->status === 'pending') background: #fff3cd; color: #856404;
-                            @else background: #f8d7da; color: #721c24; @endif">
+                        @php
+                            $paymentStatusClass = $ticket->payment->status === 'success'
+                                ? 'status-paid'
+                                : ($ticket->payment->status === 'pending' ? 'status-pending' : 'status-failed');
+                        @endphp
+                        <span class="status-badge {{ $paymentStatusClass }}">
                             {{ ucfirst($ticket->payment->status) }}
                         </span>
                     </p>

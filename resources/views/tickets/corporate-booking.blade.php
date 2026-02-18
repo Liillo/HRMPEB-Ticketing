@@ -135,7 +135,7 @@
                     <div class="form-group">
                         <label><i class="fas fa-id-card"></i> Attendee Details</label>
                         <small style="color: var(--text-secondary); display: block; margin-bottom: 8px;">
-                            Enter each attendee's full details below. The layout adjusts automatically to fit your screen.
+                            Enter each attendee's full details below.
                         </small>
                         <div id="attendees-container"></div>
                         @error('attendee_names')
@@ -179,10 +179,15 @@
     </div>
 </div>
 
+@php
+    $oldAttendeeNames = array_values((array) old('attendee_names', []));
+    $oldAttendeeEmails = array_values((array) old('attendee_emails', []));
+    $oldAttendeePhones = array_values((array) old('attendee_phones', []));
+@endphp
 <script>
-const oldNames = @json(old('attendee_names', []));
-const oldEmails = @json(old('attendee_emails', []));
-const oldPhones = @json(old('attendee_phones', []));
+const oldNames = <?php echo json_encode($oldAttendeeNames, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT); ?>;
+const oldEmails = <?php echo json_encode($oldAttendeeEmails, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT); ?>;
+const oldPhones = <?php echo json_encode($oldAttendeePhones, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT); ?>;
 
 function renderAttendeeInputs() {
     const attendees = parseInt(document.getElementById('number_of_attendees').value);

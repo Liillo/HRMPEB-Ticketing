@@ -29,7 +29,6 @@ Route::get('/ticket/retrieve', [TicketController::class, 'retrieveForm'])->name(
 Route::post('/ticket/retrieve', [TicketController::class, 'retrieveTicket'])->name('ticket.retrieve');
 Route::get('/ticket/{uuid}', [TicketController::class, 'show'])->name('ticket.show');
 Route::get('/ticket/{uuid}/download', [TicketController::class, 'download'])->name('ticket.download');
-Route::get('/ticket/{uuid}/validate', [TicketController::class, 'viewValidation'])->name('ticket.validate');
 
 // Admin Routes
 Route::prefix('admin')->name('admin.')->group(function () {
