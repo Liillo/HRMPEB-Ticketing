@@ -36,6 +36,82 @@
             background-attachment: fixed;
             color: var(--text-primary);
             line-height: 1.6;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        html::before,
+        html::after,
+        body::before,
+        body::after {
+            content: "";
+            position: fixed;
+            pointer-events: none;
+            z-index: 0;
+            transform-style: preserve-3d;
+        }
+
+        html::before {
+            width: 360px;
+            height: 200px;
+            left: -70px;
+            top: 36px;
+            border-radius: 24px;
+            border: 1px solid rgba(124, 106, 70, 0.34);
+            background:
+                linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(212, 165, 116, 0.34)),
+                repeating-linear-gradient(120deg, rgba(124, 106, 70, 0.16) 0 1px, transparent 1px 24px);
+            box-shadow: 0 24px 40px rgba(124, 106, 70, 0.2);
+            transform: perspective(1200px) rotateX(56deg) rotateZ(-28deg);
+            opacity: 0.9;
+        }
+
+        html::after {
+            width: 240px;
+            height: 240px;
+            right: -52px;
+            top: 88px;
+            border-radius: 28px;
+            border: 1px solid rgba(124, 106, 70, 0.3);
+            background:
+                radial-gradient(circle at 30% 26%, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.1) 56%),
+                linear-gradient(145deg, rgba(212, 165, 116, 0.44), rgba(124, 106, 70, 0.16));
+            box-shadow: 0 22px 36px rgba(124, 106, 70, 0.18);
+            transform: perspective(1000px) rotateX(18deg) rotateY(-26deg) rotateZ(10deg);
+            opacity: 0.82;
+        }
+
+        body::before {
+            width: 580px;
+            height: 220px;
+            right: -110px;
+            bottom: -58px;
+            border-radius: 22px;
+            border: 1px solid rgba(124, 106, 70, 0.3);
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(232, 220, 200, 0.5)),
+                repeating-linear-gradient(90deg, rgba(124, 106, 70, 0.16) 0 1px, transparent 1px 28px);
+            box-shadow: 0 26px 40px rgba(124, 106, 70, 0.2);
+            transform: perspective(1200px) rotateX(75deg) rotateZ(-8deg);
+            opacity: 0.78;
+        }
+
+        body::after {
+            width: 320px;
+            height: 320px;
+            left: -110px;
+            bottom: -132px;
+            border-radius: 50%;
+            background:
+                radial-gradient(circle, rgba(212, 165, 116, 0.34) 0 46%, rgba(212, 165, 116, 0) 68%),
+                radial-gradient(circle, rgba(124, 106, 70, 0.24), rgba(124, 106, 70, 0) 72%);
+            transform: perspective(980px) rotateX(64deg) rotateY(18deg);
+            opacity: 0.62;
         }
         
         .container {
@@ -217,3 +293,4 @@
     @stack('scripts')
 </body>
 </html>
+

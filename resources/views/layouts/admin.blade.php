@@ -39,6 +39,82 @@
             background-attachment: fixed;
             color: var(--text-primary);
             line-height: 1.6;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        html::before,
+        html::after,
+        body::before,
+        body::after {
+            content: "";
+            position: fixed;
+            pointer-events: none;
+            z-index: 0;
+            transform-style: preserve-3d;
+        }
+
+        html::before {
+            width: 320px;
+            height: 180px;
+            left: -50px;
+            top: 34px;
+            border-radius: 22px;
+            border: 1px solid rgba(124, 106, 70, 0.34);
+            background:
+                linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(212, 165, 116, 0.32)),
+                repeating-linear-gradient(120deg, rgba(124, 106, 70, 0.16) 0 1px, transparent 1px 22px);
+            box-shadow: 0 22px 36px rgba(124, 106, 70, 0.2);
+            transform: perspective(1200px) rotateX(56deg) rotateZ(-24deg);
+            opacity: 0.88;
+        }
+
+        html::after {
+            width: 210px;
+            height: 210px;
+            right: -42px;
+            top: 86px;
+            border-radius: 24px;
+            border: 1px solid rgba(124, 106, 70, 0.3);
+            background:
+                radial-gradient(circle at 30% 26%, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.1) 56%),
+                linear-gradient(145deg, rgba(212, 165, 116, 0.42), rgba(124, 106, 70, 0.16));
+            box-shadow: 0 20px 34px rgba(124, 106, 70, 0.18);
+            transform: perspective(1000px) rotateX(18deg) rotateY(-24deg) rotateZ(10deg);
+            opacity: 0.8;
+        }
+
+        body::before {
+            width: 520px;
+            height: 200px;
+            right: -90px;
+            bottom: -52px;
+            border-radius: 20px;
+            border: 1px solid rgba(124, 106, 70, 0.3);
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(232, 220, 200, 0.48)),
+                repeating-linear-gradient(90deg, rgba(124, 106, 70, 0.16) 0 1px, transparent 1px 26px);
+            box-shadow: 0 24px 38px rgba(124, 106, 70, 0.2);
+            transform: perspective(1200px) rotateX(74deg) rotateZ(-8deg);
+            opacity: 0.76;
+        }
+
+        body::after {
+            width: 280px;
+            height: 280px;
+            left: -95px;
+            bottom: -120px;
+            border-radius: 50%;
+            background:
+                radial-gradient(circle, rgba(212, 165, 116, 0.34) 0 46%, rgba(212, 165, 116, 0) 68%),
+                radial-gradient(circle, rgba(124, 106, 70, 0.24), rgba(124, 106, 70, 0) 72%);
+            transform: perspective(980px) rotateX(62deg) rotateY(18deg);
+            opacity: 0.6;
         }
         
         .admin-container {
@@ -514,3 +590,4 @@
     @stack('scripts')
 </body>
 </html>
+

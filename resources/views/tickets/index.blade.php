@@ -9,7 +9,8 @@
 @section('content')
 <div class="container">
     <div style="min-height: 100vh; padding: 40px 0;">
-        <div style="text-align: center; margin-bottom: 50px;">
+
+<div style="text-align: center; margin-bottom: 50px;">
             <div style="margin-bottom: 18px;">
                 <img
                     src="{{ asset('images/hrmpeb-logo.png') }}"
@@ -30,25 +31,25 @@
                     <h2 style="color: var(--color-primary); margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
                         <i class="fas fa-calendar-alt"></i> {{ $event->name }}
                     </h2>
-                    
+
                     @if($event->description)
                     <p style="color: var(--text-secondary); margin-bottom: 20px; line-height: 1.6;">
                         {{ \Illuminate\Support\Str::limit($event->description, 120) }}
                     </p>
                     @endif
-                    
+
                     <div style="margin-bottom: 12px; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
                         <i class="fas fa-calendar" style="color: var(--color-accent);"></i>
                         <strong>Date:</strong> {{ $event->event_date->format('F j, Y') }}
                     </div>
-                    
+
                     @if($event->location)
                     <div style="margin-bottom: 20px; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
                         <i class="fas fa-map-marker-alt" style="color: var(--color-accent);"></i>
                         <strong>Location:</strong> {{ $event->location }}
                     </div>
                     @endif
-                    
+
                     <div style="background: var(--color-muted); padding: 16px; border-radius: 8px; margin-bottom: 20px;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                             <span style="display: flex; align-items: center; gap: 6px;">
@@ -63,7 +64,7 @@
                             <strong style="color: var(--color-primary);">KES {{ number_format($event->corporate_price, 0) }}</strong>
                         </div>
                     </div>
-                    
+
                     <button class="btn btn-primary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
                         <i class="fas fa-ticket-alt"></i> Book Now
                     </button>
@@ -80,13 +81,13 @@
 
         <div class="tickets-footer">
             <p style="color: var(--text-secondary); margin: 0 0 6px; font-size: 14px;">
-                Already paid and lost your ticket? Click here: 
+                Already paid and lost your ticket? Click here:
                 <a href="{{ route('ticket.retrieve.form') }}" style="color: var(--color-primary); font-weight: 700; text-decoration: underline;">
                     Retrieve your ticket
                 </a>
             </p>
             <p style="color: var(--text-secondary); margin: 0; font-size: 14px;">
-                Need to complete a pending booking? Click here: 
+                Need to complete a pending booking? Click here:
                 <a href="{{ route('payment.pending.form') }}" style="color: var(--color-primary); font-weight: 700; text-decoration: underline;">
                     Continue payment
                 </a>
@@ -122,3 +123,4 @@
 }
 </style>
 @endsection
+
