@@ -19,6 +19,11 @@ class Ticket extends Model
         'company_name', 'company_email', 'company_phone',
         'number_of_attendees', 'amount', 'status',
         'max_scans', 'scan_count', 'qr_code',
+        'attendee_details',
+    ];
+
+    protected $casts = [
+        'attendee_details' => 'array',
     ];
 
     protected static function boot()

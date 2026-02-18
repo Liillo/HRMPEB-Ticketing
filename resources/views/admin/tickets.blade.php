@@ -68,7 +68,7 @@
     <form method="GET" action="{{ route('admin.tickets') }}">
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
             <div class="form-group" style="margin-bottom: 0;">
-                <input type="search" name="search" placeholder="Search name, email, UUID, or M-Pesa receipt..." value="{{ request('search') }}">
+                <input type="search" name="search" placeholder="Search name, email, phone, UUID, attendee, or M-Pesa receipt..." value="{{ request('search') }}">
             </div>
             
             <div class="form-group" style="margin-bottom: 0;">

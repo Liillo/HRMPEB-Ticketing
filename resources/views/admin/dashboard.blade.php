@@ -218,15 +218,35 @@
                 <a href="{{ route('admin.tickets', ['scan' => 'scanned']) }}" class="btn btn-secondary" style="padding: 6px 10px; font-size: 12px;">View all</a>
             </div>
             <div class="list-body">
-                @forelse($recent_scanned_tickets as $ticket)
+                @forelse($recent_scans as $scan)
+                    @php
+                        $ticket = $scan->ticket;
+                        $displayName = 'Unknown Ticket';
+
+                        if ($ticket) {
+                            $displayName = $ticket->type === 'individual' ? $ticket->name : $ticket->company_name;
+
+                            if ($ticket->type === 'corporate' && is_array($ticket->attendee_details) && $scan->scanned_at) {
+                                $scannedAt = \Carbon\Carbon::parse($scan->scanned_at)->toDateTimeString();
+                                $matchedAttendee = collect($ticket->attendee_details)->first(function ($attendee) use ($scan, $scannedAt) {
+                                    return ($attendee['checked_in_at'] ?? null) === $scannedAt
+                                        && (int) ($attendee['checked_in_by_admin_id'] ?? 0) === (int) $scan->admin_id;
+                                });
+
+                                if (!empty($matchedAttendee['name'])) {
+                                    $displayName = $ticket->company_name . ' - ' . $matchedAttendee['name'];
+                                }
+                            }
+                        }
+                    @endphp
                     <div class="list-item">
                         <div class="list-main">
-                            <div class="list-name">{{ $ticket->type === 'individual' ? $ticket->name : $ticket->company_name }}</div>
-                            <div class="list-id">{{ substr($ticket->uuid, 0, 10) }}...</div>
+                            <div class="list-name">{{ $displayName }}</div>
+                            <div class="list-id">{{ $ticket ? substr($ticket->uuid, 0, 10) . '...' : '-' }}</div>
                         </div>
                         <div class="list-meta">
-                            {{ $ticket->latestScan && $ticket->latestScan->admin ? $ticket->latestScan->admin->name : 'System' }}
-                            · {{ $ticket->scans_max_scanned_at ? \Carbon\Carbon::parse($ticket->scans_max_scanned_at)->format('M d, g:i A') : '-' }}
+                            {{ $scan->admin ? $scan->admin->name : 'System' }}
+                            · {{ $scan->scanned_at ? \Carbon\Carbon::parse($scan->scanned_at)->format('M d, g:i A') : '-' }}
                         </div>
                     </div>
                 @empty

@@ -38,16 +38,39 @@
     border-radius: 20px;
     font-weight: 600;
 }
+
+.attendee-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 14px;
+}
+
+@media (max-width: 768px) {
+    .attendee-grid {
+        grid-template-columns: 1fr;
+    }
+}
 </style>
 @endpush
 
 @section('content')
 <div class="container">
     <div style="min-height: 100vh; padding: 40px 0;">
-        <div style="max-width: 600px; margin: 0 auto;">
+        <div style="max-width: 920px; margin: 0 auto;">
             <h1 style="text-align: center; color: var(--color-primary); margin-bottom: 40px;">
                 <i class="fas fa-building"></i> Corporate Booking
             </h1>
+
+            @if($errors->any())
+            <div class="alert alert-error" style="margin-bottom: 20px;">
+                <strong>Please fix the following:</strong>
+                <ul style="margin: 8px 0 0 18px;">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+            @endif
             
             <div class="card">
                 <div style="background: linear-gradient(135deg, #e8f4f8 0%, #f0f8ff 100%); border-left: 4px solid var(--color-primary); padding: 16px; margin-bottom: 24px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
@@ -108,6 +131,23 @@
                             <span class="error">{{ $message }}</span>
                         @enderror
                     </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-id-card"></i> Attendee Details</label>
+                        <small style="color: var(--text-secondary); display: block; margin-bottom: 8px;">
+                            Enter each attendee's full details below. The layout adjusts automatically to fit your screen.
+                        </small>
+                        <div id="attendees-container"></div>
+                        @error('attendee_names')
+                            <span class="error">{{ $message }}</span>
+                        @enderror
+                        @error('attendee_emails')
+                            <span class="error">{{ $message }}</span>
+                        @enderror
+                        @error('attendee_phones')
+                            <span class="error">{{ $message }}</span>
+                        @enderror
+                    </div>
                     
                     <div style="background: var(--color-muted); padding: 20px; border-radius: 12px; margin-bottom: 24px; border: 2px solid var(--color-border);">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
@@ -140,6 +180,45 @@
 </div>
 
 <script>
+const oldNames = @json(old('attendee_names', []));
+const oldEmails = @json(old('attendee_emails', []));
+const oldPhones = @json(old('attendee_phones', []));
+
+function renderAttendeeInputs() {
+    const attendees = parseInt(document.getElementById('number_of_attendees').value);
+    const container = document.getElementById('attendees-container');
+    let html = '';
+
+    for (let i = 0; i < attendees; i++) {
+        const index = i + 1;
+        const nameValue = (oldNames[i] || '').replace(/"/g, '&quot;');
+        const emailValue = (oldEmails[i] || '').replace(/"/g, '&quot;');
+        const phoneValue = (oldPhones[i] || '').replace(/"/g, '&quot;');
+
+        html += `
+            <div style="border: 1px solid var(--color-border); border-radius: 10px; padding: 14px; margin-bottom: 12px; background: #fff;">
+                <div style="font-weight: 600; margin-bottom: 10px; color: var(--color-primary);">Attendee ${index}</div>
+                <div class="attendee-grid">
+                    <div>
+                        <label style="font-size: 13px; margin-bottom: 6px;">Full Name</label>
+                        <input type="text" name="attendee_names[]" value="${nameValue}" required>
+                    </div>
+                    <div>
+                        <label style="font-size: 13px; margin-bottom: 6px;">Email</label>
+                        <input type="email" name="attendee_emails[]" value="${emailValue}" required>
+                    </div>
+                    <div>
+                        <label style="font-size: 13px; margin-bottom: 6px;">Phone</label>
+                        <input type="text" name="attendee_phones[]" value="${phoneValue}" required>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    container.innerHTML = html;
+}
+
 function updateSummary() {
     const attendees = parseInt(document.getElementById('number_of_attendees').value);
     const badge = document.getElementById('attendees-count');
@@ -149,6 +228,10 @@ function updateSummary() {
     } else {
         badge.innerHTML = '<i class="fas fa-users"></i> ' + attendees + ' People';
     }
+
+    renderAttendeeInputs();
 }
+
+document.addEventListener('DOMContentLoaded', updateSummary);
 </script>
 @endsection

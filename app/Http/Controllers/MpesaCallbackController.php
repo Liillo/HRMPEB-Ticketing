@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Payment;
 use App\Models\Ticket;
 use App\Mail\TicketPurchased;
+use App\Services\TicketService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -137,16 +138,8 @@ class MpesaCallbackController extends Controller
                     'ticket_uuid' => $ticket->uuid
                 ]);
 
-                // Generate QR code if not exists
-                if (!$ticket->qr_code || !file_exists(storage_path('app/public/qrcodes/' . $ticket->uuid . '.svg'))) {
-                    $ticketService = new \App\Services\TicketService();
-                    $ticketService->generateQrCode($ticket);
-                    
-                    Log::info('QR Code Generated', ['ticket_uuid' => $ticket->uuid]);
-                }
-
-                // Send confirmation email
-                $this->sendTicketEmail($ticket);
+                // Generate ticket QR(s) and send email(s) depending on ticket type.
+                app(TicketService::class)->fulfillPaidTicket($ticket);
 
             } catch (\Exception $e) {
                 Log::error('Failed to update ticket or send email', [

@@ -76,22 +76,49 @@ class TicketController extends Controller
     // Store corporate booking in SESSION
     public function storeCorporate(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'event_id' => 'required|exists:events,id',
             'company_name' => 'required|string|max:255',
             'company_email' => 'required|email|max:255',
             'company_phone' => 'required|string|max:20',
             'number_of_attendees' => 'required|integer|min:1|max:8',
+            'attendee_names' => 'required|array',
+            'attendee_names.*' => 'required|string|max:255',
+            'attendee_emails' => 'required|array',
+            'attendee_emails.*' => 'required|email|max:255|distinct',
+            'attendee_phones' => 'required|array',
+            'attendee_phones.*' => 'required|string|max:20',
         ]);
+
+        $attendeeCount = (int) $validated['number_of_attendees'];
+        $names = $validated['attendee_names'] ?? [];
+        $emails = $validated['attendee_emails'] ?? [];
+        $phones = $validated['attendee_phones'] ?? [];
+
+        if (count($names) !== $attendeeCount || count($emails) !== $attendeeCount || count($phones) !== $attendeeCount) {
+            return back()
+                ->withInput()
+                ->withErrors(['number_of_attendees' => 'Attendee details count must match selected number of attendees.']);
+        }
+
+        $attendees = [];
+        for ($i = 0; $i < $attendeeCount; $i++) {
+            $attendees[] = [
+                'name' => trim((string) $names[$i]),
+                'email' => trim((string) $emails[$i]),
+                'phone' => trim((string) $phones[$i]),
+            ];
+        }
 
         session([
             'booking_data' => [
-                'event_id' => $request->event_id,
+                'event_id' => $validated['event_id'],
                 'type' => 'corporate',
-                'company_name' => $request->company_name,
-                'company_email' => $request->company_email,
-                'company_phone' => $request->company_phone,
-                'number_of_attendees' => $request->number_of_attendees,
+                'company_name' => $validated['company_name'],
+                'company_email' => $validated['company_email'],
+                'company_phone' => $validated['company_phone'],
+                'number_of_attendees' => $validated['number_of_attendees'],
+                'attendees' => $attendees,
             ]
         ]);
 
@@ -130,6 +157,7 @@ class TicketController extends Controller
                 'company_email' => $bookingData['company_email'],
                 'company_phone' => $bookingData['company_phone'],
                 'number_of_attendees' => $bookingData['number_of_attendees'],
+                'attendee_details' => $bookingData['attendees'] ?? [],
                 'amount' => $event->corporate_price,
                 'status' => 'pending',
                 'max_scans' => $bookingData['number_of_attendees'],
@@ -145,22 +173,36 @@ class TicketController extends Controller
     public function payment($uuid)
     {
         $ticket = Ticket::where('uuid', $uuid)->firstOrFail();
+
+        if ($this->isPendingTicketExpired($ticket)) {
+            $this->deleteExpiredPendingTicket($ticket);
+
+            return redirect()
+                ->route('payment.pending.form')
+                ->with('error', 'This pending payment has expired after 24 hours. Please start the booking process again.');
+        }
+
         return view('tickets.payment', compact('ticket'));
     }
 
     public function pendingPaymentForm()
     {
+        $this->purgeExpiredPendingTickets();
+
         return view('tickets.pending-payment');
     }
 
     public function pendingPayment(Request $request)
     {
+        $this->purgeExpiredPendingTickets();
+
         $data = $request->validate([
             'email' => 'required|email',
             'phone' => 'required|string|max:20',
         ]);
 
         $pendingTicket = Ticket::where('status', 'pending')
+            ->where('created_at', '>=', now()->subHours(24))
             ->where(function ($query) use ($data) {
                 $query->where('email', $data['email'])
                     ->orWhere('company_email', $data['email']);
@@ -209,6 +251,15 @@ class TicketController extends Controller
         ]);
 
         $ticket = Ticket::where('uuid', $uuid)->firstOrFail();
+
+        if ($this->isPendingTicketExpired($ticket)) {
+            $this->deleteExpiredPendingTicket($ticket);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'This pending payment expired after 24 hours. Please start the booking process again.'
+            ], 410);
+        }
 
         if ($ticket->status === 'paid') {
             return response()->json([
@@ -280,6 +331,15 @@ class TicketController extends Controller
     public function waiting($uuid)
     {
         $ticket = Ticket::where('uuid', $uuid)->firstOrFail();
+
+        if ($this->isPendingTicketExpired($ticket)) {
+            $this->deleteExpiredPendingTicket($ticket);
+
+            return redirect()
+                ->route('payment.pending.form')
+                ->with('error', 'This pending payment has expired after 24 hours. Please start the booking process again.');
+        }
+
         return view('tickets.waiting', compact('ticket'));
     }
 
@@ -288,6 +348,17 @@ class TicketController extends Controller
     {
         try {
             $ticket = Ticket::where('uuid', $uuid)->with('payment')->firstOrFail();
+
+            if ($this->isPendingTicketExpired($ticket)) {
+                $this->deleteExpiredPendingTicket($ticket);
+
+                return response()->json([
+                    'status' => 'expired',
+                    'message' => 'This pending payment expired after 24 hours. Please start the booking process again.',
+                    'redirect' => route('payment.pending.form')
+                ], 410);
+            }
+
             $payment = $ticket->payment;
             
             Log::info('Checking Payment Status', [
@@ -335,6 +406,7 @@ class TicketController extends Controller
                         ]);
 
                         $ticket->update(['status' => 'paid']);
+                        $this->ticketService->fulfillPaidTicket($ticket);
 
                         return response()->json([
                             'status' => 'paid',
@@ -492,5 +564,38 @@ class TicketController extends Controller
             ->with('success', $request->boolean('resend_email')
                 ? 'Ticket found. We have resent the ticket email.'
                 : 'Ticket found successfully.');
+    }
+
+    private function isPendingTicketExpired(Ticket $ticket): bool
+    {
+        return $ticket->status === 'pending'
+            && $ticket->created_at !== null
+            && $ticket->created_at->lt(now()->subHours(24));
+    }
+
+    private function deleteExpiredPendingTicket(Ticket $ticket): void
+    {
+        if (!$this->isPendingTicketExpired($ticket)) {
+            return;
+        }
+
+        Log::info('Deleting expired pending ticket', [
+            'ticket_id' => $ticket->id,
+            'ticket_uuid' => $ticket->uuid,
+            'created_at' => $ticket->created_at?->toDateTimeString(),
+        ]);
+
+        $ticket->delete();
+    }
+
+    private function purgeExpiredPendingTickets(): void
+    {
+        $deleted = Ticket::where('status', 'pending')
+            ->where('created_at', '<', now()->subHours(24))
+            ->delete();
+
+        if ($deleted > 0) {
+            Log::info('Purged expired pending tickets', ['count' => $deleted]);
+        }
     }
 }

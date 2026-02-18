@@ -57,6 +57,22 @@
                     <label style="color: var(--text-secondary); font-size: 14px;">Amount</label>
                     <p style="margin-top: 4px; font-weight: 600;">KES {{ number_format($ticket->amount, 0) }}</p>
                 </div>
+
+                @if($ticket->type === 'corporate' && !empty($ticket->attendee_details))
+                <div style="margin-bottom: 16px;">
+                    <label style="color: var(--text-secondary); font-size: 14px;">Company Attendee Manifest</label>
+                    <div style="margin-top: 8px; border: 1px solid var(--color-border); border-radius: 8px; overflow: hidden;">
+                        @foreach($ticket->attendee_details as $index => $attendee)
+                            <div style="padding: 10px 12px; border-bottom: 1px solid var(--color-border);">
+                                <div style="font-weight: 600;">{{ $index + 1 }}. {{ $attendee['name'] ?? 'N/A' }}</div>
+                                <div style="font-size: 13px; color: var(--text-secondary);">
+                                    {{ $attendee['email'] ?? 'N/A' }} · {{ $attendee['phone'] ?? 'N/A' }}
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
                 
                 <div style="margin-bottom: 16px;">
                     <label style="color: var(--text-secondary); font-size: 14px;">Status</label>
@@ -135,7 +151,48 @@
             @if($ticket->scans->count() > 0)
             <div class="card">
                 <h3 style="color: var(--color-primary); margin-bottom: 16px;">Scan History</h3>
-                @foreach($ticket->scans as $scan)
+                @php
+                    $usedAttendeeKeys = [];
+                @endphp
+                @foreach($ticket->scans->sortBy('scanned_at') as $scan)
+                @php
+                    $matchedAttendee = null;
+
+                    if (
+                        $ticket->type === 'corporate'
+                        && is_array($ticket->attendee_details)
+                        && !empty($ticket->attendee_details)
+                    ) {
+                        foreach ($ticket->attendee_details as $key => $attendee) {
+                            if (in_array($key, $usedAttendeeKeys, true)) {
+                                continue;
+                            }
+
+                            if (!($attendee['checked_in'] ?? false) || empty($attendee['checked_in_at'])) {
+                                continue;
+                            }
+
+                            try {
+                                $attendeeTime = \Carbon\Carbon::parse($attendee['checked_in_at']);
+
+                                if (
+                                    $attendeeTime->format('Y-m-d H:i:s') === $scan->scanned_at->format('Y-m-d H:i:s')
+                                    || (
+                                        isset($attendee['checked_in_by_admin_id'])
+                                        && (int) $attendee['checked_in_by_admin_id'] === (int) $scan->admin_id
+                                        && $attendeeTime->diffInSeconds($scan->scanned_at) <= 120
+                                    )
+                                ) {
+                                    $matchedAttendee = $attendee;
+                                    $usedAttendeeKeys[] = $key;
+                                    break;
+                                }
+                            } catch (\Throwable $e) {
+                                continue;
+                            }
+                        }
+                    }
+                @endphp
                 <div style="padding: 12px; border-bottom: 1px solid var(--color-border); margin-bottom: 8px;">
                     <p style="font-size: 14px; margin-bottom: 4px;">
                         <strong>{{ $scan->scanned_at->format('M d, Y g:i A') }}</strong>
@@ -143,6 +200,14 @@
                     <p style="font-size: 12px; color: var(--text-secondary);">
                         By: {{ $scan->admin ? $scan->admin->name : 'System' }}
                     </p>
+                    @if($matchedAttendee)
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+                        Attendee: <strong>{{ $matchedAttendee['name'] ?? 'N/A' }}</strong>
+                        @if(!empty($matchedAttendee['email']))
+                            ({{ $matchedAttendee['email'] }})
+                        @endif
+                    </p>
+                    @endif
                 </div>
                 @endforeach
             </div>

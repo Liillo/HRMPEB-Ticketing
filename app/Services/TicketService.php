@@ -60,4 +60,19 @@ class TicketService
 
         return true;
     }
+
+    public function fulfillPaidTicket(Ticket $ticket): void
+    {
+        $ticket->loadMissing('event');
+        $this->ensureQrExists($ticket);
+        $this->sendTicketEmail($ticket);
+    }
+
+    private function ensureQrExists(Ticket $ticket): void
+    {
+        $qrFile = 'qrcodes/' . $ticket->uuid . '.svg';
+        if (!Storage::disk('public')->exists($qrFile) || !$ticket->qr_code) {
+            $this->generateQrCode($ticket);
+        }
+    }
 }
