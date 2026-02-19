@@ -218,7 +218,7 @@
             select,
             textarea {
                 padding: 10px 12px;
-                font-size: 16px; /* Prevent zoom on iOS */
+                font-size: 16px;
             }
         }
         
