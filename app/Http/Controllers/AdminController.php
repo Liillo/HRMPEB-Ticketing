@@ -355,5 +355,6 @@ class AdminController extends Controller
 
         return view('admin.search-results', compact('tickets', 'query'));
     }
+
 }
 

@@ -191,11 +191,11 @@
 
                 @if(($ticket->payment->method ?? 'mpesa') === \App\Models\Payment::METHOD_CHEQUE && $ticket->payment->status === 'pending')
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <form method="POST" action="{{ route('admin.payments.approve-cheque', $ticket->payment->id) }}">
+                    <form method="POST" action="{{ route('admin.payments.approve-cheque', $ticket->payment->id) }}" onsubmit="return confirm('Are you sure you want to approve this cheque payment? This will mark the ticket as paid and send ticket email(s).');">
                         @csrf
                         <button type="submit" class="btn btn-primary">Approve Cheque</button>
                     </form>
-                    <form method="POST" action="{{ route('admin.payments.reject-cheque', $ticket->payment->id) }}">
+                    <form method="POST" action="{{ route('admin.payments.reject-cheque', $ticket->payment->id) }}" onsubmit="return confirm('Are you sure you want to reject this cheque payment? This will mark the ticket as failed.');">
                         @csrf
                         <input type="text" name="reason" placeholder="Optional rejection reason" style="padding: 8px; border: 1px solid var(--color-border); border-radius: 6px; margin-right: 8px;">
                         <button type="submit" class="btn btn-danger">Reject Cheque</button>

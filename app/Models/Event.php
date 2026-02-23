@@ -66,7 +66,7 @@ class Event extends Model
     {
         $query = $this->tickets()
             ->where('status', 'pending')
-            ->where('created_at', '>=', now()->subHours(24));
+            ->where('created_at', '>=', now()->subHours(48));
 
         if ($ignoreTicketId !== null) {
             $query->where('id', '!=', $ignoreTicketId);
@@ -166,7 +166,7 @@ class Event extends Model
             ->where('status', $status);
 
         if ($pendingOnlyFresh) {
-            $query->where('created_at', '>=', now()->subHours(24));
+            $query->where('created_at', '>=', now()->subHours(48));
         }
 
         if ($ignoreTicketId !== null) {
