@@ -22,14 +22,26 @@
             
             <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
             
-            @if($ticket->type === 'individual')
+            @if($ticket->type === 'corporate')
+            <p><strong>Ticket Type:</strong> Corporate</p>
             <p><strong>Attendee:</strong> {{ $ticket->name }}</p>
-            @else
             <p><strong>Company:</strong> {{ $ticket->company_name }}</p>
-            <p><strong>Attendees:</strong> {{ $ticket->number_of_attendees }} {{ $ticket->number_of_attendees == 1 ? 'person' : 'people' }}</p>
+            @else
+            <p><strong>Ticket Type:</strong> Individual</p>
+            <p><strong>Attendee:</strong> {{ $ticket->name }}</p>
             @endif
             
-            <p><strong>Amount Paid:</strong> KES {{ number_format($ticket->amount, 0) }}</p>
+            <p><strong>Amount Paid:</strong> KES {{ number_format($payment?->amount ?? $ticket->amount, 0) }}</p>
+            @if($payment)
+            <p><strong>Payment Method:</strong> {{ strtoupper($payment->method ?? 'mpesa') }}</p>
+            @if(($payment->method ?? 'mpesa') === \App\Models\Payment::METHOD_MPESA)
+            <p><strong>M-Pesa Receipt:</strong> {{ $payment->mpesa_receipt ?? 'Awaiting callback sync' }}</p>
+            <p><strong>Transaction Phone:</strong> {{ $payment->phone_number ?? 'N/A' }}</p>
+            @else
+            <p><strong>Cheque Number:</strong> {{ $payment->cheque_number ?? 'N/A' }}</p>
+            <p><strong>Bank Name:</strong> {{ $payment->bank_name ?? 'N/A' }}</p>
+            @endif
+            @endif
             <p><strong>Ticket ID:</strong> {{ $ticket->uuid }}</p>
             
             <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
@@ -38,6 +50,9 @@
             
             <p style="font-size: 12px; color: #666; margin-top: 30px;">
                 Please present this ticket (printed or on your phone) at the event entrance.
+            </p>
+            <p style="font-size: 12px; color: #8a2f2f; font-weight: 700; margin-top: 10px;">
+                DISCLAIMER: This ticket can only be used once.
             </p>
         </div>
     </div>

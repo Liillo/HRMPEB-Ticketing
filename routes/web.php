@@ -22,7 +22,6 @@ Route::get('/payment/{ticket}', [TicketController::class, 'payment'])->name('pay
 Route::post('/payment/{ticket}/initiate', [TicketController::class, 'initiatePayment'])->name('payment.initiate');
 Route::get('/waiting/{ticket}', [TicketController::class, 'waiting'])->name('payment.waiting');
 Route::get('/check-payment/{ticket}', [TicketController::class, 'checkPaymentStatus'])->name('payment.check');
-Route::get('/success/{ticket}', [TicketController::class, 'success'])->name('payment.success');
 
 // Ticket Routes
 Route::get('/ticket/retrieve', [TicketController::class, 'retrieveForm'])->name('ticket.retrieve.form');
@@ -43,6 +42,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/tickets/{id}', [AdminController::class, 'ticketDetail'])->name('ticket.detail');
         Route::get('/tickets/{id}/download', [AdminController::class, 'downloadTicket'])->name('ticket.download');
         Route::post('/tickets/{id}/resend', [AdminController::class, 'resendTicket'])->name('ticket.resend');
+        Route::post('/payments/{payment}/approve-cheque', [AdminController::class, 'approveChequePayment'])->name('payments.approve-cheque');
+        Route::post('/payments/{payment}/reject-cheque', [AdminController::class, 'rejectChequePayment'])->name('payments.reject-cheque');
         Route::get('/validation', [AdminController::class, 'validation'])->name('validation');
         Route::post('/scan', [AdminController::class, 'scanTicket'])->name('scan');
         

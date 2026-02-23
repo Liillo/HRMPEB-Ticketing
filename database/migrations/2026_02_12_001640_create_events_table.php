@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('location')->nullable();
             $table->decimal('individual_price', 10, 2);
             $table->decimal('corporate_price', 10, 2);
-            $table->integer('max_corporate_attendees')->default(8);
+            $table->integer('max_corporate_attendees')->default(10);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });

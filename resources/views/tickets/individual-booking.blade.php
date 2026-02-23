@@ -13,7 +13,7 @@
             <h1 style="text-align: center; color: var(--color-primary); margin-bottom: 40px;">
                 <i class="fas fa-user"></i> Individual Booking
             </h1>
-            
+
             <div class="card">
                 <div style="background: #e8f4f8; border-left: 4px solid var(--color-primary); padding: 12px; margin-bottom: 24px; border-radius: 4px;">
                     <p style="color: var(--text-primary); font-size: 14px;">
@@ -24,6 +24,24 @@
                 <form method="POST" action="{{ route('booking.individual.store') }}">
                     @csrf
                     <input type="hidden" name="event_id" value="{{ $event->id }}">
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="form-group">
+                            <label for="staff_no"><i class="fas fa-id-badge"></i> Staff No. (Optional)</label>
+                            <input type="text" id="staff_no" name="staff_no" value="{{ old('staff_no') }}">
+                            @error('staff_no')
+                                <span class="error">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ihrm_no"><i class="fas fa-hashtag"></i> IHRM No. (Optional)</label>
+                            <input type="text" id="ihrm_no" name="ihrm_no" value="{{ old('ihrm_no') }}">
+                            @error('ihrm_no')
+                                <span class="error">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
                     
                     <div class="form-group">
                         <label for="name"><i class="fas fa-user"></i> Full Name</label>

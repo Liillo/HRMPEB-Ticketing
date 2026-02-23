@@ -44,11 +44,26 @@
                 @error('corporate_price')<span class="error">{{ $message }}</span>@enderror
             </div>
         </div>
+
+        <div class="form-group">
+            <label for="max_capacity"><i class="fas fa-users"></i> Max Event Capacity</label>
+            <input type="number" id="max_capacity" name="max_capacity" value="{{ old('max_capacity', 100) }}" min="1" required>
+            <small style="color: var(--text-secondary);">Set the maximum number of attendees allowed for this event.</small>
+            @error('max_capacity')<span class="error">{{ $message }}</span>@enderror
+        </div>
+
+        <div class="form-group">
+            <label for="max_corporate_tables"><i class="fas fa-table"></i> Max Corporate Tables</label>
+            <input type="number" id="max_corporate_tables" name="max_corporate_tables" value="{{ old('max_corporate_tables', 10) }}" min="1" required>
+            <small style="color: var(--text-secondary);">Each paid corporate booking uses exactly one table (up to 10 attendees).</small>
+            @error('max_corporate_tables')<span class="error">{{ $message }}</span>@enderror
+        </div>
         
         <div class="form-group">
-            <label for="max_corporate_attendees"><i class="fas fa-users-cog"></i> Max Corporate Attendees</label>
-            <input type="number" id="max_corporate_attendees" name="max_corporate_attendees" value="{{ old('max_corporate_attendees', 8) }}" min="1" max="50" required>
-            @error('max_corporate_attendees')<span class="error">{{ $message }}</span>@enderror
+            <label><i class="fas fa-users-cog"></i> Max Corporate Attendees</label>
+            <div style="background: var(--color-muted); border: 1px solid var(--color-border); border-radius: 8px; padding: 12px;">
+                Fixed at <strong>10 attendees</strong> for all events.
+            </div>
         </div>
         
         <div style="display: flex; gap: 12px;">

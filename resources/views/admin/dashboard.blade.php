@@ -11,7 +11,7 @@
 
     .metrics-grid {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(6, minmax(0, 1fr));
         gap: 14px;
         margin-bottom: 26px;
     }
@@ -86,6 +86,22 @@
         margin-bottom: 10px;
     }
 
+    .stat-icon {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        color: var(--stat-accent, var(--color-primary));
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
     .stat-value {
         font-size: 28px;
         font-weight: 700;
@@ -152,6 +168,10 @@
     .list-name { font-size: 14px; font-weight: 600; }
     .list-meta { color: var(--text-secondary); font-size: 12px; }
 
+    @media (max-width: 1440px) {
+        .metrics-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
     @media (max-width: 1024px) {
         .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .lists-grid { grid-template-columns: 1fr; }
@@ -174,36 +194,42 @@
     <div class="metrics-grid">
         <a class="stat-link" href="{{ route('admin.tickets') }}">
             <div class="stat-card stat-card--total">
+                <div class="stat-icon"><i class="fas fa-ticket-alt"></i></div>
                 <div class="stat-label">Total Tickets</div>
                 <div class="stat-value">{{ $stats['total_tickets'] }}</div>
             </div>
         </a>
         <a class="stat-link" href="{{ route('admin.tickets', ['status' => 'paid']) }}">
             <div class="stat-card stat-card--paid">
+                <div class="stat-icon"><i class="fas fa-circle-check"></i></div>
                 <div class="stat-label">Paid Tickets</div>
                 <div class="stat-value">{{ $stats['paid_tickets'] }}</div>
             </div>
         </a>
         <a class="stat-link" href="{{ route('admin.tickets', ['status' => 'pending']) }}">
             <div class="stat-card stat-card--pending">
+                <div class="stat-icon"><i class="fas fa-hourglass-half"></i></div>
                 <div class="stat-label">Pending Tickets</div>
                 <div class="stat-value">{{ $stats['pending_tickets'] }}</div>
             </div>
         </a>
         <a class="stat-link" href="{{ route('admin.tickets', ['status' => 'failed']) }}">
             <div class="stat-card stat-card--failed">
+                <div class="stat-icon"><i class="fas fa-circle-xmark"></i></div>
                 <div class="stat-label">Failed Tickets</div>
                 <div class="stat-value">{{ $stats['failed_tickets'] }}</div>
             </div>
         </a>
         <a class="stat-link" href="{{ route('admin.tickets', ['scan' => 'scanned']) }}">
             <div class="stat-card stat-card--scans">
+                <div class="stat-icon"><i class="fas fa-qrcode"></i></div>
                 <div class="stat-label">Total Scans</div>
                 <div class="stat-value">{{ $stats['total_scans'] }}</div>
             </div>
         </a>
         <a class="stat-link" href="{{ route('admin.tickets', ['status' => 'paid']) }}">
             <div class="stat-card stat-card--revenue">
+                <div class="stat-icon"><i class="fas fa-coins"></i></div>
                 <div class="stat-label">Total Revenue</div>
                 <div class="stat-value">{{ number_format($stats['total_revenue'], 0) }}</div>
                 <div class="stat-note">KES</div>
@@ -224,19 +250,7 @@
                         $displayName = 'Unknown Ticket';
 
                         if ($ticket) {
-                            $displayName = $ticket->type === 'individual' ? $ticket->name : $ticket->company_name;
-
-                            if ($ticket->type === 'corporate' && is_array($ticket->attendee_details) && $scan->scanned_at) {
-                                $scannedAt = \Carbon\Carbon::parse($scan->scanned_at)->toDateTimeString();
-                                $matchedAttendee = collect($ticket->attendee_details)->first(function ($attendee) use ($scan, $scannedAt) {
-                                    return ($attendee['checked_in_at'] ?? null) === $scannedAt
-                                        && (int) ($attendee['checked_in_by_admin_id'] ?? 0) === (int) $scan->admin_id;
-                                });
-
-                                if (!empty($matchedAttendee['name'])) {
-                                    $displayName = $ticket->company_name . ' - ' . $matchedAttendee['name'];
-                                }
-                            }
+                            $displayName = $ticket->name ?: $ticket->company_name;
                         }
                     @endphp
                     <div class="list-item">
@@ -246,8 +260,15 @@
                         </div>
                         <div class="list-meta">
                             {{ $scan->admin ? $scan->admin->name : 'System' }}
-                            · {{ $scan->scanned_at ? \Carbon\Carbon::parse($scan->scanned_at)->format('M d, g:i A') : '-' }}
+                            &middot; {{ $scan->scanned_at ? \Carbon\Carbon::parse($scan->scanned_at)->format('M d, g:i A') : '-' }}
                         </div>
+                        @if($ticket && ($ticket->staff_no || $ticket->ihrm_no))
+                            <div class="list-meta">
+                                {{ $ticket->staff_no ? 'Staff No.: ' . $ticket->staff_no : '' }}
+                                @if($ticket->staff_no && $ticket->ihrm_no) &middot; @endif
+                                {{ $ticket->ihrm_no ? 'IHRM No.: ' . $ticket->ihrm_no : '' }}
+                            </div>
+                        @endif
                     </div>
                 @empty
                     <div class="list-item"><div class="list-meta">No scanned tickets yet.</div></div>
@@ -264,10 +285,17 @@
                 @forelse($recent_paid_tickets as $ticket)
                     <div class="list-item">
                         <div class="list-main">
-                            <div class="list-name">{{ $ticket->type === 'individual' ? $ticket->name : $ticket->company_name }}</div>
+                            <div class="list-name">{{ $ticket->name ?: $ticket->company_name }}</div>
                             <div class="list-id">{{ substr($ticket->uuid, 0, 10) }}...</div>
                         </div>
-                        <div class="list-meta">KES {{ number_format($ticket->amount, 0) }} · {{ $ticket->payment_max_updated_at ? \Carbon\Carbon::parse($ticket->payment_max_updated_at)->format('M d, g:i A') : $ticket->updated_at->format('M d, g:i A') }}</div>
+                        <div class="list-meta">KES {{ number_format($ticket->amount, 0) }} &middot; {{ $ticket->payment_max_updated_at ? \Carbon\Carbon::parse($ticket->payment_max_updated_at)->format('M d, g:i A') : $ticket->updated_at->format('M d, g:i A') }}</div>
+                        @if($ticket->staff_no || $ticket->ihrm_no)
+                            <div class="list-meta">
+                                {{ $ticket->staff_no ? 'Staff No.: ' . $ticket->staff_no : '' }}
+                                @if($ticket->staff_no && $ticket->ihrm_no) &middot; @endif
+                                {{ $ticket->ihrm_no ? 'IHRM No.: ' . $ticket->ihrm_no : '' }}
+                            </div>
+                        @endif
                     </div>
                 @empty
                     <div class="list-item"><div class="list-meta">No paid tickets yet.</div></div>
@@ -277,3 +305,4 @@
     </div>
 </div>
 @endsection
+

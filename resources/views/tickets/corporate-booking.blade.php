@@ -45,8 +45,40 @@
     gap: 14px;
 }
 
+.attendee-grid--compact {
+    grid-template-columns: 0.8fr 0.8fr 1fr 1.25fr 0.9fr;
+    gap: 10px;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.attendee-grid--compact .compact-field {
+    min-width: 0;
+    width: 100%;
+}
+
+.attendee-grid--compact .compact-field input {
+    padding: 9px 10px;
+    font-size: 14px;
+    width: 100%;
+}
+
+.attendee-grid--compact .compact-field label {
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 @media (max-width: 768px) {
     .attendee-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .attendee-grid--compact {
         grid-template-columns: 1fr;
     }
 }
@@ -79,10 +111,23 @@
                         <span>
                             <strong>{{ $event->name }}</strong> - Corporate ticket price is 
                             <strong>KES {{ number_format($event->corporate_price, 0) }}</strong> 
-                            regardless of number of attendees (maximum 8 people).
+                            regardless of number of attendees (maximum 10 people). One paid booking = one table.
                         </span>
                     </p>
                 </div>
+
+                @php
+                    $remainingSlots = $event->remainingCapacity();
+                    $maxSelectableAttendees = $remainingSlots === null ? 10 : max(1, min(10, $remainingSlots));
+                    $remainingCorporateTables = $event->remainingCorporateTables();
+                @endphp
+
+                @if($remainingCorporateTables !== null)
+                    <div style="background: #fff8eb; border-left: 4px solid #b07a2f; padding: 12px; margin-bottom: 20px; border-radius: 8px;">
+                        <strong style="color: #6f4c1f;">Corporate tables remaining:</strong>
+                        <span style="color: #6f4c1f;">{{ $remainingCorporateTables }}</span>
+                    </div>
+                @endif
                 
                 <form method="POST" action="{{ route('booking.corporate.store') }}">
                     @csrf
@@ -117,7 +162,7 @@
                             <i class="fas fa-users"></i> Number of Attendees
                         </label>
                         <select id="number_of_attendees" name="number_of_attendees" class="custom-select" required onchange="updateSummary()">
-                            @for($i = 1; $i <= 8; $i++)
+                            @for($i = 1; $i <= $maxSelectableAttendees; $i++)
                                 <option value="{{ $i }}" {{ old('number_of_attendees', 1) == $i ? 'selected' : '' }}>
                                     {{ $i }} {{ $i == 1 ? 'Person' : 'People' }}
                                 </option>
@@ -145,6 +190,12 @@
                             <span class="error">{{ $message }}</span>
                         @enderror
                         @error('attendee_phones')
+                            <span class="error">{{ $message }}</span>
+                        @enderror
+                        @error('attendee_staff_nos')
+                            <span class="error">{{ $message }}</span>
+                        @enderror
+                        @error('attendee_ihrm_nos')
                             <span class="error">{{ $message }}</span>
                         @enderror
                     </div>
@@ -183,11 +234,15 @@
     $oldAttendeeNames = array_values((array) old('attendee_names', []));
     $oldAttendeeEmails = array_values((array) old('attendee_emails', []));
     $oldAttendeePhones = array_values((array) old('attendee_phones', []));
+    $oldAttendeeStaffNos = array_values((array) old('attendee_staff_nos', []));
+    $oldAttendeeIhrmNos = array_values((array) old('attendee_ihrm_nos', []));
 @endphp
 <script>
 const oldNames = <?php echo json_encode($oldAttendeeNames, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT); ?>;
 const oldEmails = <?php echo json_encode($oldAttendeeEmails, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT); ?>;
 const oldPhones = <?php echo json_encode($oldAttendeePhones, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT); ?>;
+const oldStaffNos = <?php echo json_encode($oldAttendeeStaffNos, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT); ?>;
+const oldIhrmNos = <?php echo json_encode($oldAttendeeIhrmNos, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT); ?>;
 
 function renderAttendeeInputs() {
     const attendees = parseInt(document.getElementById('number_of_attendees').value);
@@ -199,21 +254,31 @@ function renderAttendeeInputs() {
         const nameValue = (oldNames[i] || '').replace(/"/g, '&quot;');
         const emailValue = (oldEmails[i] || '').replace(/"/g, '&quot;');
         const phoneValue = (oldPhones[i] || '').replace(/"/g, '&quot;');
+        const staffNoValue = (oldStaffNos[i] || '').replace(/"/g, '&quot;');
+        const ihrmNoValue = (oldIhrmNos[i] || '').replace(/"/g, '&quot;');
 
         html += `
             <div style="border: 1px solid var(--color-border); border-radius: 10px; padding: 14px; margin-bottom: 12px; background: #fff;">
                 <div style="font-weight: 600; margin-bottom: 10px; color: var(--color-primary);">Attendee ${index}</div>
-                <div class="attendee-grid">
-                    <div>
-                        <label style="font-size: 13px; margin-bottom: 6px;">Full Name</label>
+                <div class="attendee-grid attendee-grid--compact">
+                    <div class="compact-field">
+                        <label>Staff No. (Optional)</label>
+                        <input type="text" name="attendee_staff_nos[]" value="${staffNoValue}">
+                    </div>
+                    <div class="compact-field">
+                        <label>IHRM No. (Optional)</label>
+                        <input type="text" name="attendee_ihrm_nos[]" value="${ihrmNoValue}">
+                    </div>
+                    <div class="compact-field">
+                        <label>Full Name</label>
                         <input type="text" name="attendee_names[]" value="${nameValue}" required>
                     </div>
-                    <div>
-                        <label style="font-size: 13px; margin-bottom: 6px;">Email</label>
+                    <div class="compact-field">
+                        <label>Email</label>
                         <input type="email" name="attendee_emails[]" value="${emailValue}" required>
                     </div>
-                    <div>
-                        <label style="font-size: 13px; margin-bottom: 6px;">Phone</label>
+                    <div class="compact-field">
+                        <label>Phone</label>
                         <input type="text" name="attendee_phones[]" value="${phoneValue}" required>
                     </div>
                 </div>

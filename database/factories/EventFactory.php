@@ -18,7 +18,8 @@ class EventFactory extends Factory
             'location' => fake()->city() . ', Kenya',
             'individual_price' => fake()->randomElement([1000, 2500, 5000]),
             'corporate_price' => fake()->randomElement([10000, 15000, 20000]),
-            'max_corporate_attendees' => 8,
+            'max_capacity' => fake()->numberBetween(50, 500),
+            'max_corporate_attendees' => 10,
             'is_active' => true,
         ];
     }

@@ -29,80 +29,68 @@
     <div style="margin-bottom: 24px;">
         <a href="{{ route('admin.tickets') }}" style="color: var(--color-primary); text-decoration: none;">&larr; Back to All Tickets</a>
     </div>
-    
+
     <h1 style="color: var(--color-primary); margin-bottom: 32px;">Ticket Details</h1>
-    
+
     <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
         <div>
             <div class="card" style="margin-bottom: 24px;">
                 <h2 style="color: var(--color-primary); margin-bottom: 24px;">Basic Information</h2>
-                
+
                 <div style="margin-bottom: 16px;">
                     <label style="color: var(--text-secondary); font-size: 14px;">Ticket UUID</label>
                     <p style="font-family: monospace; font-size: 14px; margin-top: 4px;">{{ $ticket->uuid }}</p>
                 </div>
-                
+
+                @if(!empty($ticket->corporate_booking_ref))
+                <div style="margin-bottom: 16px;">
+                    <label style="color: var(--text-secondary); font-size: 14px;">Corporate Booking Ref</label>
+                    <p style="font-family: monospace; font-size: 12px; margin-top: 4px;">{{ $ticket->corporate_booking_ref }}</p>
+                </div>
+                @endif
+
                 <div style="margin-bottom: 16px;">
                     <label style="color: var(--text-secondary); font-size: 14px;">Type</label>
                     <p style="margin-top: 4px;">{{ ucfirst($ticket->type) }}</p>
                 </div>
-                
-                @if($ticket->type === 'individual')
-                    <div style="margin-bottom: 16px;">
-                        <label style="color: var(--text-secondary); font-size: 14px;">Name</label>
-                        <p style="margin-top: 4px;">{{ $ticket->name }}</p>
-                    </div>
-                    <div style="margin-bottom: 16px;">
-                        <label style="color: var(--text-secondary); font-size: 14px;">Email</label>
-                        <p style="margin-top: 4px;">{{ $ticket->email }}</p>
-                    </div>
-                    <div style="margin-bottom: 16px;">
-                        <label style="color: var(--text-secondary); font-size: 14px;">Phone</label>
-                        <p style="margin-top: 4px;">{{ $ticket->phone }}</p>
-                    </div>
-                @else
-                    <div style="margin-bottom: 16px;">
-                        <label style="color: var(--text-secondary); font-size: 14px;">Company Name</label>
-                        <p style="margin-top: 4px;">{{ $ticket->company_name }}</p>
-                    </div>
-                    <div style="margin-bottom: 16px;">
-                        <label style="color: var(--text-secondary); font-size: 14px;">Company Email</label>
-                        <p style="margin-top: 4px;">{{ $ticket->company_email }}</p>
-                    </div>
-                    <div style="margin-bottom: 16px;">
-                        <label style="color: var(--text-secondary); font-size: 14px;">Company Phone</label>
-                        <p style="margin-top: 4px;">{{ $ticket->company_phone }}</p>
-                    </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="color: var(--text-secondary); font-size: 14px;">Name</label>
+                    <p style="margin-top: 4px;">{{ $ticket->name ?? 'N/A' }}</p>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="color: var(--text-secondary); font-size: 14px;">Email</label>
+                    <p style="margin-top: 4px;">{{ $ticket->email ?? 'N/A' }}</p>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="color: var(--text-secondary); font-size: 14px;">Phone</label>
+                    <p style="margin-top: 4px;">{{ $ticket->phone ?? 'N/A' }}</p>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="color: var(--text-secondary); font-size: 14px;">Staff No.</label>
+                    <p style="margin-top: 4px;">{{ $ticket->staff_no ?? 'N/A' }}</p>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="color: var(--text-secondary); font-size: 14px;">IHRM No.</label>
+                    <p style="margin-top: 4px;">{{ $ticket->ihrm_no ?? 'N/A' }}</p>
+                </div>
+
+                @if(!empty($ticket->company_name))
+                <div style="margin-bottom: 16px;">
+                    <label style="color: var(--text-secondary); font-size: 14px;">Company</label>
+                    <p style="margin-top: 4px;">{{ $ticket->company_name }}</p>
+                </div>
                 @endif
-                
+
                 <div style="margin-bottom: 16px;">
                     <label style="color: var(--text-secondary); font-size: 14px;">Amount</label>
                     <p style="margin-top: 4px; font-weight: 600;">KES {{ number_format($ticket->amount, 0) }}</p>
                 </div>
 
-                @if($ticket->type === 'corporate' && !empty($ticket->attendee_details))
-                <div style="margin-bottom: 16px;">
-                    <label style="color: var(--text-secondary); font-size: 14px;">Company Attendee Manifest</label>
-                    <div style="margin-top: 8px; border: 1px solid var(--color-border); border-radius: 8px; overflow: hidden;">
-                        @foreach($ticket->attendee_details as $index => $attendee)
-                            <div style="padding: 10px 12px; border-bottom: 1px solid var(--color-border);">
-                                <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-                                    <div style="font-weight: 600;">{{ $index + 1 }}. {{ $attendee['name'] ?? 'N/A' }}</div>
-                                    @if((bool) ($attendee['checked_in'] ?? false))
-                                        <span title="Checked in" style="color: var(--color-success); font-size: 14px;">
-                                            <i class="fas fa-check-circle"></i>
-                                        </span>
-                                    @endif
-                                </div>
-                                <div style="font-size: 13px; color: var(--text-secondary);">
-                                    {{ $attendee['email'] ?? 'N/A' }} · {{ $attendee['phone'] ?? 'N/A' }}
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-                @endif
-                
                 <div style="margin-bottom: 16px;">
                     <label style="color: var(--text-secondary); font-size: 14px;">Status</label>
                     <p style="margin-top: 4px;">
@@ -116,38 +104,91 @@
                         </span>
                     </p>
                 </div>
-                
+
                 <div style="margin-bottom: 16px;">
                     <label style="color: var(--text-secondary); font-size: 14px;">Scans</label>
                     <p style="margin-top: 4px;">{{ $ticket->scan_count }} / {{ $ticket->max_scans }}</p>
                 </div>
-                
+
                 <div style="margin-bottom: 16px;">
                     <label style="color: var(--text-secondary); font-size: 14px;">Created At</label>
                     <p style="margin-top: 4px;">{{ $ticket->created_at->format('F j, Y g:i A') }}</p>
                 </div>
-                
+
                 @if($ticket->status === 'paid')
                 <div style="margin-top: 24px;">
                     <a href="{{ route('admin.ticket.download', $ticket->id) }}" class="btn btn-primary">Download PDF</a>
                 </div>
                 @endif
             </div>
-            
+
+            @if(isset($manifestTickets) && $manifestTickets->count() > 0)
+            <div class="card" style="margin-bottom: 24px;">
+                <h2 style="color: var(--color-primary); margin-bottom: 16px;">Corporate Manifest</h2>
+                <div style="border: 1px solid var(--color-border); border-radius: 8px; overflow: hidden;">
+                    @foreach($manifestTickets as $index => $manifestTicket)
+                    <div style="padding: 10px 12px; border-bottom: 1px solid var(--color-border);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                            <div style="font-weight: 600;">{{ $index + 1 }}. {{ $manifestTicket->name ?? 'N/A' }}</div>
+                            @if((int) $manifestTicket->scan_count > 0)
+                            <span title="Checked in" style="color: var(--color-success); font-size: 14px;">
+                                <i class="fas fa-check-circle"></i>
+                            </span>
+                            @endif
+                        </div>
+                        <div style="font-size: 13px; color: var(--text-secondary);">
+                            {{ $manifestTicket->email ?? 'N/A' }} &middot; {{ $manifestTicket->phone ?? 'N/A' }}
+                            @if($manifestTicket->staff_no || $manifestTicket->ihrm_no)
+                                <br>
+                                {{ $manifestTicket->staff_no ? 'Staff No.: ' . $manifestTicket->staff_no : '' }}
+                                @if($manifestTicket->staff_no && $manifestTicket->ihrm_no) &middot; @endif
+                                {{ $manifestTicket->ihrm_no ? 'IHRM No.: ' . $manifestTicket->ihrm_no : '' }}
+                            @endif
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
             @if($ticket->payment)
             <div class="card">
                 <h2 style="color: var(--color-primary); margin-bottom: 24px;">Payment Information</h2>
-                
+
+                <div style="margin-bottom: 16px;">
+                    <label style="color: var(--text-secondary); font-size: 14px;">Payment Method</label>
+                    <p style="margin-top: 4px;">{{ strtoupper($ticket->payment->method ?? 'mpesa') }}</p>
+                </div>
+
+                @if(($ticket->payment->method ?? 'mpesa') === \App\Models\Payment::METHOD_MPESA)
                 <div style="margin-bottom: 16px;">
                     <label style="color: var(--text-secondary); font-size: 14px;">M-Pesa Receipt</label>
                     <p style="margin-top: 4px;">{{ $ticket->payment->mpesa_receipt ?? 'N/A' }}</p>
                 </div>
-                
+
                 <div style="margin-bottom: 16px;">
                     <label style="color: var(--text-secondary); font-size: 14px;">Phone Number</label>
-                    <p style="margin-top: 4px;">{{ $ticket->payment->phone_number }}</p>
+                    <p style="margin-top: 4px;">{{ $ticket->payment->phone_number ?? 'N/A' }}</p>
                 </div>
-                
+                @else
+                <div style="margin-bottom: 16px;">
+                    <label style="color: var(--text-secondary); font-size: 14px;">Cheque Number</label>
+                    <p style="margin-top: 4px;">{{ $ticket->payment->cheque_number ?? 'N/A' }}</p>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="color: var(--text-secondary); font-size: 14px;">Bank Name</label>
+                    <p style="margin-top: 4px;">{{ $ticket->payment->bank_name ?? 'N/A' }}</p>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="color: var(--text-secondary); font-size: 14px;">Cheque Date</label>
+                    <p style="margin-top: 4px;">{{ $ticket->payment->cheque_date?->format('F j, Y') ?? 'N/A' }}</p>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="color: var(--text-secondary); font-size: 14px;">Payer Name</label>
+                    <p style="margin-top: 4px;">{{ $ticket->payment->payer_name ?? 'N/A' }}</p>
+                </div>
+                @endif
+
                 <div style="margin-bottom: 16px;">
                     <label style="color: var(--text-secondary); font-size: 14px;">Payment Status</label>
                     <p style="margin-top: 4px;">
@@ -161,10 +202,24 @@
                         </span>
                     </p>
                 </div>
+
+                @if(($ticket->payment->method ?? 'mpesa') === \App\Models\Payment::METHOD_CHEQUE && $ticket->payment->status === 'pending')
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <form method="POST" action="{{ route('admin.payments.approve-cheque', $ticket->payment->id) }}">
+                        @csrf
+                        <button type="submit" class="btn btn-primary">Approve Cheque</button>
+                    </form>
+                    <form method="POST" action="{{ route('admin.payments.reject-cheque', $ticket->payment->id) }}">
+                        @csrf
+                        <input type="text" name="reason" placeholder="Optional rejection reason" style="padding: 8px; border: 1px solid var(--color-border); border-radius: 6px; margin-right: 8px;">
+                        <button type="submit" class="btn btn-danger">Reject Cheque</button>
+                    </form>
+                </div>
+                @endif
             </div>
             @endif
         </div>
-        
+
         <div>
             @if($ticket->status === 'paid')
             <div class="card" style="text-align: center; margin-bottom: 24px;">
@@ -180,52 +235,11 @@
                 @endif
             </div>
             @endif
-            
+
             @if($ticket->scans->count() > 0)
             <div class="card">
                 <h3 style="color: var(--color-primary); margin-bottom: 16px;">Scan History</h3>
-                @php
-                    $usedAttendeeKeys = [];
-                @endphp
                 @foreach($ticket->scans->sortBy('scanned_at') as $scan)
-                @php
-                    $matchedAttendee = null;
-
-                    if (
-                        $ticket->type === 'corporate'
-                        && is_array($ticket->attendee_details)
-                        && !empty($ticket->attendee_details)
-                    ) {
-                        foreach ($ticket->attendee_details as $key => $attendee) {
-                            if (in_array($key, $usedAttendeeKeys, true)) {
-                                continue;
-                            }
-
-                            if (!($attendee['checked_in'] ?? false) || empty($attendee['checked_in_at'])) {
-                                continue;
-                            }
-
-                            try {
-                                $attendeeTime = \Carbon\Carbon::parse($attendee['checked_in_at']);
-
-                                if (
-                                    $attendeeTime->format('Y-m-d H:i:s') === $scan->scanned_at->format('Y-m-d H:i:s')
-                                    || (
-                                        isset($attendee['checked_in_by_admin_id'])
-                                        && (int) $attendee['checked_in_by_admin_id'] === (int) $scan->admin_id
-                                        && $attendeeTime->diffInSeconds($scan->scanned_at) <= 120
-                                    )
-                                ) {
-                                    $matchedAttendee = $attendee;
-                                    $usedAttendeeKeys[] = $key;
-                                    break;
-                                }
-                            } catch (\Throwable $e) {
-                                continue;
-                            }
-                        }
-                    }
-                @endphp
                 <div style="padding: 12px; border-bottom: 1px solid var(--color-border); margin-bottom: 8px;">
                     <p style="font-size: 14px; margin-bottom: 4px;">
                         <strong>{{ $scan->scanned_at->format('M d, Y g:i A') }}</strong>
@@ -233,14 +247,6 @@
                     <p style="font-size: 12px; color: var(--text-secondary);">
                         By: {{ $scan->admin ? $scan->admin->name : 'System' }}
                     </p>
-                    @if($matchedAttendee)
-                    <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
-                        Attendee: <strong>{{ $matchedAttendee['name'] ?? 'N/A' }}</strong>
-                        @if(!empty($matchedAttendee['email']))
-                            ({{ $matchedAttendee['email'] }})
-                        @endif
-                    </p>
-                    @endif
                 </div>
                 @endforeach
             </div>
@@ -249,3 +255,6 @@
     </div>
 </div>
 @endsection
+
+
+

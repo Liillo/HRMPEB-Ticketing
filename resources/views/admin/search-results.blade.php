@@ -40,9 +40,9 @@
                     <tr style="border-bottom: 1px solid var(--color-border);">
                         <td style="padding: 12px; font-family: monospace; font-size: 12px;">{{ substr($ticket->uuid, 0, 13) }}...</td>
                         <td style="padding: 12px;">{{ ucfirst($ticket->type) }}</td>
-                        <td style="padding: 12px;">{{ $ticket->type === 'individual' ? $ticket->name : $ticket->company_name }}</td>
-                        <td style="padding: 12px;">{{ $ticket->type === 'individual' ? $ticket->email : $ticket->company_email }}</td>
-                        <td style="padding: 12px;">{{ $ticket->type === 'individual' ? $ticket->phone : $ticket->company_phone }}</td>
+                        <td style="padding: 12px;">{{ $ticket->name ?: $ticket->company_name }}</td>
+                        <td style="padding: 12px;">{{ $ticket->email ?: $ticket->company_email }}</td>
+                        <td style="padding: 12px;">{{ $ticket->phone ?: $ticket->company_phone }}</td>
                         <td style="padding: 12px;">
                             <span style="padding: 4px 12px; border-radius: 12px; font-size: 12px; 
                                 @if($ticket->status === 'paid') background: #d4edda; color: #155724;

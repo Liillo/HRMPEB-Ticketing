@@ -25,9 +25,19 @@
         </div>
 
         @if($events->count() > 0)
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 30px; max-width: 1200px; margin: 0 auto;">
+            <div class="events-grid-booking">
                 @foreach($events as $event)
-                <div class="card event-card" style="cursor: pointer; transition: transform 0.3s;" onclick="window.location=`{{ route('booking.type', $event->id) }}`">
+                @php
+                    $isSoldOut = $event->isSoldOut();
+                    $remainingCapacity = $event->remainingCapacity();
+                    $eventCardStateClass = $isSoldOut ? 'event-card-disabled' : 'event-card-clickable';
+                    $eventCardHref = $isSoldOut ? '' : route('booking.type', $event->id);
+                @endphp
+                <div
+                    class="card event-card {{ $eventCardStateClass }}"
+                    data-href="{{ $eventCardHref }}"
+                    onclick="if (this.dataset.href) window.location=this.dataset.href"
+                >
                     <h2 style="color: var(--color-primary); margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
                         <i class="fas fa-calendar-alt"></i> {{ $event->name }}
                     </h2>
@@ -63,11 +73,23 @@
                             </span>
                             <strong style="color: var(--color-primary);">KES {{ number_format($event->corporate_price, 0) }}</strong>
                         </div>
+                        @if($remainingCapacity !== null)
+                        <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--color-border); color: var(--text-secondary); font-size: 14px;">
+                            <i class="fas fa-users"></i>
+                            {{ $remainingCapacity }} slot{{ $remainingCapacity === 1 ? '' : 's' }} left
+                        </div>
+                        @endif
                     </div>
 
-                    <button class="btn btn-primary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                        <i class="fas fa-ticket-alt"></i> Book Now
+                    <button class="btn {{ $isSoldOut ? 'btn-secondary' : 'btn-primary' }}" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;" {{ $isSoldOut ? 'disabled' : '' }}>
+                        <i class="fas {{ $isSoldOut ? 'fa-ban' : 'fa-ticket-alt' }}"></i> {{ $isSoldOut ? 'Sold Out' : 'Book Now' }}
                     </button>
+
+                    @if($isSoldOut)
+                    <p style="margin-top: 10px; font-size: 13px; color: var(--text-secondary); text-align: center;">
+                        All available slots are currently taken. Please check with the event organizers for latest updates.
+                    </p>
+                    @endif
                 </div>
                 @endforeach
             </div>
@@ -102,6 +124,29 @@
     box-shadow: 0 6px 16px rgba(124, 106, 70, 0.2);
 }
 
+.event-card {
+    transition: transform 0.3s;
+}
+
+.event-card-clickable {
+    cursor: pointer;
+    opacity: 1;
+}
+
+.event-card-disabled {
+    cursor: not-allowed;
+    opacity: 0.75;
+}
+
+.events-grid-booking {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 350px));
+    justify-content: center;
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
 .tickets-footer {
     width: min(96vw, 1500px);
     margin: 28px 0 0;
@@ -117,10 +162,14 @@
 }
 
 @media (max-width: 768px) {
+    .events-grid-booking {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
     .tickets-footer {
         width: calc(100vw - 24px);
     }
 }
 </style>
 @endsection
-

@@ -27,7 +27,7 @@ class EventSeeder extends Seeder
             'location' => 'Uhuru Gardens, Nairobi',
             'individual_price' => 1500,
             'corporate_price' => 35000,
-            'max_corporate_attendees' => 8,
+            'max_corporate_attendees' => 10,
             'is_active' => true,
         ]);
 
@@ -38,7 +38,7 @@ class EventSeeder extends Seeder
             'location' => 'Radisson Blu, Nairobi',
             'individual_price' => 3000,
             'corporate_price' => 60000,
-            'max_corporate_attendees' => 12,
+            'max_corporate_attendees' => 10,
             'is_active' => true,
         ]);
     }

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Ticket;
 use App\Models\Scan;
+use App\Models\Payment;
+use App\Models\Event;
 use App\Services\TicketService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -78,7 +80,7 @@ class AdminController extends Controller
             'pending_tickets' => Ticket::where('status', 'pending')->count(),
             'failed_tickets' => Ticket::where('status', 'failed')->count(),
             'total_scans' => Scan::count(),
-            'total_revenue' => Ticket::where('status', 'paid')->sum('amount'),
+            'total_revenue' => Payment::where('status', 'success')->sum('amount'),
         ];
 
         $recent_scans = Scan::with(['ticket', 'admin'])
@@ -104,6 +106,7 @@ class AdminController extends Controller
         $status = $request->status ?? 'all';
         $type = $request->type ?? 'all';
         $scanFilter = $request->scan ?? 'all';
+        $eventId = $request->filled('event_id') ? (int) $request->event_id : null;
 
         $tickets = Ticket::with(['event', 'payment', 'latestScan.admin'])
             ->when($search, function ($query, $search) {
@@ -113,11 +116,14 @@ class AdminController extends Controller
                     $q->where('name', 'like', '%' . $search . '%')
                         ->orWhere('email', 'like', '%' . $search . '%')
                         ->orWhere('phone', 'like', '%' . $search . '%')
+                        ->orWhere('staff_no', 'like', '%' . $search . '%')
+                        ->orWhere('ihrm_no', 'like', '%' . $search . '%')
                         ->orWhere('company_name', 'like', '%' . $search . '%')
                         ->orWhere('company_email', 'like', '%' . $search . '%')
                         ->orWhere('uuid', 'like', '%' . $search . '%')
                         ->orWhereHas('payment', function ($paymentQuery) use ($search) {
-                            $paymentQuery->where('mpesa_receipt', 'like', '%' . $search . '%');
+                            $paymentQuery->where('mpesa_receipt', 'like', '%' . $search . '%')
+                                ->orWhere('cheque_number', 'like', '%' . $search . '%');
                         })
                         ->orWhere('attendee_details', 'like', $likeSearch);
                 });
@@ -128,6 +134,9 @@ class AdminController extends Controller
             ->when($type !== 'all', function ($query) use ($type) {
                 return $query->where('type', $type);
             })
+            ->when($eventId, function ($query) use ($eventId) {
+                return $query->where('event_id', $eventId);
+            })
             ->when($scanFilter === 'scanned', function ($query) {
                 return $query->where('scan_count', '>', 0);
             })
@@ -137,13 +146,24 @@ class AdminController extends Controller
             ->latest()
             ->paginate(20);
 
-        return view('admin.tickets', compact('tickets'));
+        $events = Event::orderBy('name')->get(['id', 'name']);
+
+        return view('admin.tickets', compact('tickets', 'events'));
     }
 
     public function ticketDetail($id)
     {
         $ticket = Ticket::with(['payment', 'scans.admin'])->findOrFail($id);
-        return view('admin.ticket-detail', compact('ticket'));
+        $manifestTickets = collect();
+
+        if ($ticket->corporate_booking_ref) {
+            $manifestTickets = Ticket::with(['latestScan.admin'])
+                ->where('corporate_booking_ref', $ticket->corporate_booking_ref)
+                ->orderBy('name')
+                ->get();
+        }
+
+        return view('admin.ticket-detail', compact('ticket', 'manifestTickets'));
     }
 
     public function downloadTicket($id)
@@ -187,6 +207,55 @@ class AdminController extends Controller
         }
     }
 
+    public function approveChequePayment(Payment $payment)
+    {
+        if ($payment->method !== Payment::METHOD_CHEQUE) {
+            return back()->with('error', 'Only cheque payments can be approved from this action.');
+        }
+
+        if ($payment->status !== 'pending') {
+            return back()->with('error', 'This cheque payment has already been processed.');
+        }
+
+        $ticket = Ticket::with('event')->findOrFail($payment->ticket_id);
+
+        $payment->update([
+            'status' => 'success',
+            'response_description' => 'Cheque payment approved by admin.',
+        ]);
+
+        $ticket->update(['status' => 'paid']);
+        $this->ticketService->fulfillPaidTicket($ticket);
+
+        return back()->with('success', 'Cheque payment approved and ticket fulfilled.');
+    }
+
+    public function rejectChequePayment(Request $request, Payment $payment)
+    {
+        if ($payment->method !== Payment::METHOD_CHEQUE) {
+            return back()->with('error', 'Only cheque payments can be rejected from this action.');
+        }
+
+        if ($payment->status !== 'pending') {
+            return back()->with('error', 'This cheque payment has already been processed.');
+        }
+
+        $data = $request->validate([
+            'reason' => 'nullable|string|max:500',
+        ]);
+
+        $ticket = Ticket::findOrFail($payment->ticket_id);
+
+        $payment->update([
+            'status' => 'failed',
+            'response_description' => trim((string) ($data['reason'] ?? 'Cheque payment rejected by admin.')),
+        ]);
+
+        $ticket->update(['status' => 'failed']);
+
+        return back()->with('success', 'Cheque payment rejected.');
+    }
+
     public function validation()
     {
         return view('admin.validation');
@@ -196,7 +265,6 @@ class AdminController extends Controller
     {
         $request->validate([
             'qr_code' => 'required|string',
-            'attendee_index' => 'nullable|integer|min:0',
         ]);
 
         $qrCode = trim($request->qr_code);
@@ -225,102 +293,11 @@ class AdminController extends Controller
             ], 400);
         }
 
-        if ($ticket->type === 'corporate' && is_array($ticket->attendee_details) && count($ticket->attendee_details) > 0) {
-            $attendees = array_values($ticket->attendee_details);
-
-            if (!$request->has('attendee_index')) {
-                $remainingScans = max(0, $ticket->max_scans - $ticket->scan_count);
-
-                return response()->json([
-                    'success' => true,
-                    'requires_attendee_selection' => true,
-                    'message' => 'Select the attendee entering the event.',
-                    'ticket' => [
-                        'type' => $ticket->type,
-                        'name' => $ticket->company_name,
-                        'scan_count' => $ticket->scan_count,
-                        'max_scans' => $ticket->max_scans,
-                        'remaining_scans' => $remainingScans,
-                        'attendees' => array_map(function ($attendee, $index) {
-                            return [
-                                'index' => $index,
-                                'name' => $attendee['name'] ?? ('Attendee ' . ($index + 1)),
-                                'email' => $attendee['email'] ?? null,
-                                'phone' => $attendee['phone'] ?? null,
-                                'checked_in' => (bool) ($attendee['checked_in'] ?? false),
-                            ];
-                        }, $attendees, array_keys($attendees)),
-                    ],
-                ]);
-            }
-
-            $attendeeIndex = (int) $request->attendee_index;
-
-            if (!array_key_exists($attendeeIndex, $attendees)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Selected attendee is invalid.',
-                ], 422);
-            }
-
-            if ((bool) ($attendees[$attendeeIndex]['checked_in'] ?? false)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => ($attendees[$attendeeIndex]['name'] ?? 'This attendee') . ' is already checked in.',
-                ], 400);
-            }
-
-            if (!$ticket->canBeScanned()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Corporate ticket has reached maximum scans (' . $ticket->max_scans . ')',
-                ], 400);
-            }
-
-            $attendees[$attendeeIndex]['checked_in'] = true;
-            $attendees[$attendeeIndex]['checked_in_at'] = now()->toDateTimeString();
-            $attendees[$attendeeIndex]['checked_in_by_admin_id'] = Auth::id();
-            $ticket->attendee_details = $attendees;
-            $ticket->save();
-
-            Scan::create([
-                'ticket_id' => $ticket->id,
-                'admin_id' => Auth::id(),
-                'scanned_at' => now(),
-                'ip_address' => $request->ip(),
-                'user_agent' => $request->userAgent(),
-            ]);
-
-            $ticket->incrementScan();
-            $ticket->refresh();
-
-            $remainingScans = max(0, $ticket->max_scans - $ticket->scan_count);
-
-            return response()->json([
-                'success' => true,
-                'message' => ($attendees[$attendeeIndex]['name'] ?? 'Attendee') . ' checked in successfully',
-                'ticket' => [
-                    'type' => $ticket->type,
-                    'name' => $ticket->company_name,
-                    'scan_count' => $ticket->scan_count,
-                    'max_scans' => $ticket->max_scans,
-                    'remaining_scans' => $remainingScans,
-                ],
-            ]);
-        }
-
         if (!$ticket->canBeScanned()) {
-            if ($ticket->type === 'corporate') {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Corporate ticket has reached maximum scans (' . $ticket->max_scans . ')',
-                ], 400);
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Ticket has already been scanned',
-                ], 400);
-            }
+            return response()->json([
+                'success' => false,
+                'message' => 'Ticket has already been scanned',
+            ], 400);
         }
 
         Scan::create([
@@ -340,7 +317,7 @@ class AdminController extends Controller
             'message' => 'Ticket validated successfully',
             'ticket' => [
                 'type' => $ticket->type,
-                'name' => $ticket->type === 'corporate' ? $ticket->company_name : $ticket->name,
+                'name' => $ticket->name,
                 'scan_count' => $ticket->scan_count,
                 'max_scans' => $ticket->max_scans,
                 'remaining_scans' => $remainingScans,
@@ -360,9 +337,15 @@ class AdminController extends Controller
         $tickets = Ticket::where('name', 'like', "%{$query}%")
             ->orWhere('email', 'like', "%{$query}%")
             ->orWhere('phone', 'like', "%{$query}%")
+            ->orWhere('staff_no', 'like', "%{$query}%")
+            ->orWhere('ihrm_no', 'like', "%{$query}%")
             ->orWhere('company_name', 'like', "%{$query}%")
             ->orWhere('company_email', 'like', "%{$query}%")
             ->orWhere('uuid', 'like', "%{$query}%")
+            ->orWhereHas('payment', function ($paymentQuery) use ($query) {
+                $paymentQuery->where('mpesa_receipt', 'like', "%{$query}%")
+                    ->orWhere('cheque_number', 'like', "%{$query}%");
+            })
             ->orWhere('attendee_details', 'like', $likeQuery)
             ->with('payment')
             ->get();

@@ -15,7 +15,8 @@ class Ticket extends Model
 
     protected $fillable = [
         'event_id', 'uuid', 'type',
-        'name', 'email', 'phone',
+        'corporate_booking_ref',
+        'name', 'email', 'phone', 'staff_no', 'ihrm_no',
         'company_name', 'company_email', 'company_phone',
         'number_of_attendees', 'amount', 'status',
         'max_scans', 'scan_count', 'qr_code',

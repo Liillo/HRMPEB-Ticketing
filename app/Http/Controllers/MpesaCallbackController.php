@@ -109,13 +109,51 @@ class MpesaCallbackController extends Controller
                 'transaction_date' => $transactionDate
             ]);
 
+            $ticket = $payment->ticket()->with('event')->first();
+
+            $event = $ticket?->event;
+            $hasAttendeeCapacity = $event && $event->hasCapacityFor((int) $ticket->number_of_attendees, true, (int) $ticket->id);
+            $hasCorporateTableCapacity = $event
+                && ($ticket->type !== 'corporate' || $event->hasCorporateTableCapacity(true, (int) $ticket->id));
+
+            if (!$ticket || !$event || !$hasAttendeeCapacity || !$hasCorporateTableCapacity) {
+                $responseDescription = !$hasCorporateTableCapacity
+                    ? 'Corporate booking table capacity reached.'
+                    : 'Event capacity reached. Event is sold out.';
+
+                $payment->update([
+                    'status' => 'failed',
+                    'response_description' => $responseDescription,
+                ]);
+
+                if ($ticket) {
+                    $ticket->update(['status' => 'failed']);
+                }
+
+                Log::warning('Payment rejected due to event capacity reached', [
+                    'payment_id' => $payment->id,
+                    'ticket_id' => $ticket?->id,
+                    'event_id' => $ticket?->event_id,
+                ]);
+
+                return response()->json([
+                    'ResultCode' => 0,
+                    'ResultDesc' => 'Accepted'
+                ]);
+            }
+
             // Update payment record
             try {
-                $payment->update([
+                $paymentData = [
                     'status' => 'success',
-                    'mpesa_receipt' => $mpesaReceipt,
                     'response_description' => $resultDesc,
-                ]);
+                ];
+
+                if (!empty($mpesaReceipt)) {
+                    $paymentData['mpesa_receipt'] = $mpesaReceipt;
+                }
+
+                $payment->update($paymentData);
 
                 Log::info('Payment Updated to Success', [
                     'payment_id' => $payment->id,
@@ -130,7 +168,6 @@ class MpesaCallbackController extends Controller
 
             // Update ticket status
             try {
-                $ticket = $payment->ticket;
                 $ticket->update(['status' => 'paid']);
 
                 Log::info('Ticket Updated to Paid', [

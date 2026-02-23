@@ -21,7 +21,20 @@
                     </div>
                     
                     <div style="background: var(--color-muted); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                        @if($ticket->type === 'individual')
+                        @if($ticket->type === 'corporate')
+                            <div style="margin-bottom: 12px;">
+                                <span style="color: var(--text-secondary); font-size: 14px;">Name</span>
+                                <p style="font-weight: 600; margin-top: 4px;">{{ $ticket->name }}</p>
+                            </div>
+                            <div style="margin-bottom: 12px;">
+                                <span style="color: var(--text-secondary); font-size: 14px;">Ticket Type</span>
+                                <p style="font-weight: 600; margin-top: 4px;">Corporate</p>
+                            </div>
+                            <div style="margin-bottom: 12px;">
+                                <span style="color: var(--text-secondary); font-size: 14px;">Company</span>
+                                <p style="font-weight: 600; margin-top: 4px;">{{ $ticket->company_name }}</p>
+                            </div>
+                        @else
                             <div style="margin-bottom: 12px;">
                                 <span style="color: var(--text-secondary); font-size: 14px;">Name</span>
                                 <p style="font-weight: 600; margin-top: 4px;">{{ $ticket->name }}</p>
@@ -29,19 +42,6 @@
                             <div style="margin-bottom: 12px;">
                                 <span style="color: var(--text-secondary); font-size: 14px;">Ticket Type</span>
                                 <p style="font-weight: 600; margin-top: 4px;">Individual</p>
-                            </div>
-                        @else
-                            <div style="margin-bottom: 12px;">
-                                <span style="color: var(--text-secondary); font-size: 14px;">Company</span>
-                                <p style="font-weight: 600; margin-top: 4px;">{{ $ticket->company_name }}</p>
-                            </div>
-                            <div style="margin-bottom: 12px;">
-                                <span style="color: var(--text-secondary); font-size: 14px;">Ticket Type</span>
-                                <p style="font-weight: 600; margin-top: 4px;">Corporate (Up to 8 people)</p>
-                            </div>
-                            <div style="margin-bottom: 12px;">
-                                <span style="color: var(--text-secondary); font-size: 14px;">Scans Used</span>
-                                <p style="font-weight: 600; margin-top: 4px;">{{ $ticket->scan_count }} / {{ $ticket->max_scans }}</p>
                             </div>
                         @endif
                         

@@ -68,7 +68,7 @@
     <form method="GET" action="{{ route('admin.tickets') }}">
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
             <div class="form-group" style="margin-bottom: 0;">
-                <input type="search" name="search" placeholder="Search name, email, phone, UUID, attendee, or M-Pesa receipt..." value="{{ request('search') }}">
+                <input type="search" name="search" placeholder="Search name, email, phone, staff/IHRM no., UUID, attendee, or M-Pesa receipt..." value="{{ request('search') }}">
             </div>
             
             <div class="form-group" style="margin-bottom: 0;">
@@ -95,8 +95,21 @@
                     <option value="not_scanned" {{ request('scan', 'all') == 'not_scanned' ? 'selected' : '' }}>Not Scanned</option>
                 </select>
             </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+                <select name="event_id">
+                    <option value="" {{ request('event_id', '') === '' ? 'selected' : '' }}>All Events</option>
+                    @foreach($events as $event)
+                        <option value="{{ $event->id }}" {{ (string) request('event_id', '') === (string) $event->id ? 'selected' : '' }}>
+                            {{ $event->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
             
-            <button type="submit" class="btn btn-primary">Filter</button>
+            <div style="grid-column: 1 / -1; display: flex; justify-content: center;">
+                <button type="submit" class="btn btn-primary" style="min-width: 140px;">Filter</button>
+            </div>
         </div>
     </form>
 </div>
@@ -108,6 +121,7 @@
                 <tr>
                     <th>UUID</th>
                     <th>Type</th>
+                    <th>Event</th>
                     <th>Name/Company</th>
                     <th>Email</th>
                     <th>Amount</th>
@@ -126,8 +140,9 @@
                             {{ ucfirst($ticket->type) }}
                         </span>
                     </td>
-                    <td>{{ $ticket->type === 'individual' ? $ticket->name : $ticket->company_name }}</td>
-                    <td>{{ $ticket->type === 'individual' ? $ticket->email : $ticket->company_email }}</td>
+                    <td>{{ $ticket->event->name ?? 'N/A' }}</td>
+                    <td>{{ $ticket->name ?: $ticket->company_name }}</td>
+                    <td>{{ $ticket->email ?: $ticket->company_email }}</td>
                     <td>KES {{ number_format($ticket->amount, 0) }}</td>
                     <td>
                         <span style="padding: 4px 12px; border-radius: 12px; font-size: 12px; 
@@ -181,7 +196,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="9" style="padding: 24px; text-align: center; color: var(--text-secondary);">No tickets found</td>
+                    <td colspan="10" style="padding: 24px; text-align: center; color: var(--text-secondary);">No tickets found</td>
                 </tr>
                 @endforelse
             </tbody>
