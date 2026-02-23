@@ -81,6 +81,9 @@ class AdminController extends Controller
             'failed_tickets' => Ticket::where('status', 'failed')->count(),
             'total_scans' => Scan::count(),
             'total_revenue' => Payment::where('status', 'success')->sum('amount'),
+            'pending_cheque_payments' => Payment::where('method', Payment::METHOD_CHEQUE)
+                ->where('status', 'pending')
+                ->count(),
         ];
 
         $recent_scans = Scan::with(['ticket', 'admin'])
@@ -97,7 +100,14 @@ class AdminController extends Controller
             ->take(5)
             ->get();
 
-        return view('admin.dashboard', compact('stats', 'recent_scans', 'recent_paid_tickets'));
+        $pending_cheque_payments = Payment::with(['ticket.event'])
+            ->where('method', Payment::METHOD_CHEQUE)
+            ->where('status', 'pending')
+            ->latest('updated_at')
+            ->take(8)
+            ->get();
+
+        return view('admin.dashboard', compact('stats', 'recent_scans', 'recent_paid_tickets', 'pending_cheque_payments'));
     }
 
     public function tickets(Request $request)
@@ -121,6 +131,7 @@ class AdminController extends Controller
                         ->orWhere('company_name', 'like', '%' . $search . '%')
                         ->orWhere('company_email', 'like', '%' . $search . '%')
                         ->orWhere('uuid', 'like', '%' . $search . '%')
+                        ->orWhere('corporate_booking_ref', 'like', '%' . $search . '%')
                         ->orWhereHas('payment', function ($paymentQuery) use ($search) {
                             $paymentQuery->where('mpesa_receipt', 'like', '%' . $search . '%')
                                 ->orWhere('cheque_number', 'like', '%' . $search . '%');
@@ -154,16 +165,7 @@ class AdminController extends Controller
     public function ticketDetail($id)
     {
         $ticket = Ticket::with(['payment', 'scans.admin'])->findOrFail($id);
-        $manifestTickets = collect();
-
-        if ($ticket->corporate_booking_ref) {
-            $manifestTickets = Ticket::with(['latestScan.admin'])
-                ->where('corporate_booking_ref', $ticket->corporate_booking_ref)
-                ->orderBy('name')
-                ->get();
-        }
-
-        return view('admin.ticket-detail', compact('ticket', 'manifestTickets'));
+        return view('admin.ticket-detail', compact('ticket'));
     }
 
     public function downloadTicket($id)
@@ -342,6 +344,7 @@ class AdminController extends Controller
             ->orWhere('company_name', 'like', "%{$query}%")
             ->orWhere('company_email', 'like', "%{$query}%")
             ->orWhere('uuid', 'like', "%{$query}%")
+            ->orWhere('corporate_booking_ref', 'like', "%{$query}%")
             ->orWhereHas('payment', function ($paymentQuery) use ($query) {
                 $paymentQuery->where('mpesa_receipt', 'like', "%{$query}%")
                     ->orWhere('cheque_number', 'like', "%{$query}%");

@@ -285,7 +285,21 @@ class TicketController extends Controller
     // Show payment page (for existing ticket)
     public function payment($uuid)
     {
-        $ticket = Ticket::where('uuid', $uuid)->firstOrFail();
+        $ticket = Ticket::where('uuid', $uuid)->with('payment')->firstOrFail();
+
+        if ($ticket->status === 'paid') {
+            $message = 'Your payment has been approved. Your ticket is ready.';
+
+            if ($ticket->payment && $ticket->payment->method === Payment::METHOD_MPESA) {
+                $message = 'Your M-Pesa payment was successful. Your ticket is ready.';
+            } elseif ($ticket->payment && $ticket->payment->method === Payment::METHOD_CHEQUE) {
+                $message = 'Your cheque payment has been approved. Your ticket is ready.';
+            }
+
+            return redirect()
+                ->route('ticket.show', $ticket->uuid)
+                ->with('success', $message);
+        }
 
         if ($this->isPendingTicketExpired($ticket)) {
             $this->deleteExpiredPendingTicket($ticket);

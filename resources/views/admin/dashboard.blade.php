@@ -4,32 +4,48 @@
 
 @push('styles')
 <style>
-    .dashboard-wrap { padding: 0; }
-    .dash-header { margin-bottom: 24px; }
-    .dash-title { color: var(--color-primary); margin-bottom: 6px; }
+    .dashboard-wrap { padding: 4px 2px; }
+    .dash-header {
+        margin-bottom: 22px;
+        padding: 16px 18px;
+        border-radius: 14px;
+        background:
+            radial-gradient(120% 140% at 0% 0%, rgba(212, 165, 116, 0.2) 0%, rgba(212, 165, 116, 0) 42%),
+            linear-gradient(180deg, #fffdf9 0%, #ffffff 100%);
+        border: 1px solid rgba(124, 106, 70, 0.14);
+    }
+    .dash-title { color: var(--color-primary); margin-bottom: 6px; letter-spacing: 0.01em; }
     .dash-subtitle { color: var(--text-secondary); font-size: 14px; }
 
     .metrics-grid {
         display: grid;
-        grid-template-columns: repeat(6, minmax(0, 1fr));
-        gap: 14px;
-        margin-bottom: 26px;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+        align-items: stretch;
     }
 
     .stat-link {
         text-decoration: none;
         color: inherit;
         display: block;
+        height: 100%;
     }
 
     .stat-card {
         position: relative;
         border: 1px solid var(--color-border);
-        border-radius: 12px;
-        padding: 16px 18px;
+        border-radius: 16px;
+        padding: 16px 16px 14px;
         background: #fff;
-        min-height: 108px;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        min-height: 122px;
+        overflow: hidden;
+        transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        box-shadow: 0 6px 20px rgba(45, 36, 22, 0.06);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
     }
 
     .stat-card::before {
@@ -39,8 +55,20 @@
         top: 0;
         bottom: 0;
         width: 4px;
-        border-radius: 12px 0 0 12px;
+        border-radius: 16px 0 0 16px;
         background: var(--stat-accent, var(--color-primary));
+    }
+
+    .stat-card::after {
+        content: "";
+        position: absolute;
+        right: -40px;
+        top: -45px;
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: color-mix(in srgb, var(--stat-accent, var(--color-primary)) 16%, transparent);
+        pointer-events: none;
     }
 
     .stat-card--total {
@@ -73,9 +101,15 @@
         background: linear-gradient(180deg, #fcf7ee 0%, #ffffff 100%);
     }
 
+    .stat-card--cheque {
+        --stat-accent: #8f5f2a;
+        background: linear-gradient(180deg, #fff2e6 0%, #ffffff 100%);
+    }
+
     .stat-link:hover .stat-card {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(45, 36, 22, 0.08);
+        transform: translateY(-4px);
+        border-color: color-mix(in srgb, var(--stat-accent, var(--color-primary)) 38%, var(--color-border));
+        box-shadow: 0 14px 28px rgba(45, 36, 22, 0.14);
     }
 
     .stat-label {
@@ -88,52 +122,63 @@
 
     .stat-icon {
         position: absolute;
-        top: 10px;
-        right: 10px;
-        width: 40px;
-        height: 40px;
+        top: 12px;
+        right: 12px;
+        width: 42px;
+        height: 42px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 18px;
+        font-size: 17px;
         color: var(--stat-accent, var(--color-primary));
-        background: rgba(255, 255, 255, 0.9);
-        border: 1px solid rgba(0, 0, 0, 0.05);
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.75);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 4px 10px rgba(0, 0, 0, 0.08);
     }
 
     .stat-value {
-        font-size: 28px;
+        font-size: 31px;
         font-weight: 700;
-        line-height: 1;
+        line-height: 1.05;
         color: var(--color-primary);
+        letter-spacing: -0.02em;
     }
 
     .stat-note {
-        margin-top: 6px;
-        font-size: 12px;
+        margin-top: 7px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
         color: var(--text-secondary);
     }
 
     .lists-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 14px;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        align-items: stretch;
+        grid-auto-rows: 1fr;
     }
 
     .list-card {
         border: 1px solid var(--color-border);
-        border-radius: 12px;
+        border-radius: 16px;
         background: #fff;
         overflow: hidden;
+        box-shadow: 0 8px 24px rgba(45, 36, 22, 0.08);
+        display: flex;
+        flex-direction: column;
     }
 
     .list-head {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 14px 16px;
+        padding: 14px 16px 13px;
         border-bottom: 1px solid var(--color-border);
+        background: linear-gradient(180deg, #fffefb 0%, #fff 100%);
     }
 
     .list-head h2 {
@@ -142,14 +187,39 @@
         font-size: 17px;
     }
 
-    .list-body { padding: 0 12px 12px; }
-
-    .list-item {
-        padding: 12px 6px;
-        border-bottom: 1px solid var(--color-border);
+    .list-body {
+        padding: 2px 12px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        height: 100%;
     }
 
-    .list-item:last-child { border-bottom: none; }
+    .list-item {
+        position: relative;
+        padding: 12px 10px;
+        border: 1px solid #eee4d2;
+        border-radius: 12px;
+        background: linear-gradient(180deg, #ffffff 0%, #fffdfa 100%);
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .list-item:hover {
+        transform: translateY(-1px);
+        border-color: #e3d3ba;
+        box-shadow: 0 10px 18px rgba(45, 36, 22, 0.08);
+    }
+
+    .list-item::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 10px;
+        bottom: 10px;
+        width: 3px;
+        border-radius: 999px;
+        background: rgba(124, 106, 70, 0.18);
+    }
 
     .list-main {
         display: flex;
@@ -163,13 +233,25 @@
         font-family: monospace;
         color: var(--color-primary);
         font-size: 12px;
+        background: #f7f2ea;
+        border: 1px solid #e9decb;
+        border-radius: 999px;
+        padding: 2px 8px;
     }
 
-    .list-name { font-size: 14px; font-weight: 600; }
-    .list-meta { color: var(--text-secondary); font-size: 12px; }
+    .list-name { font-size: 14px; font-weight: 700; color: #2f2416; }
+    .list-meta { color: var(--text-secondary); font-size: 12px; margin-top: 2px; line-height: 1.35; }
 
-    @media (max-width: 1440px) {
+    .list-actions {
+        margin-top: 8px;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    @media (max-width: 1360px) {
         .metrics-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .lists-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
     @media (max-width: 1024px) {
@@ -233,6 +315,14 @@
                 <div class="stat-label">Total Revenue</div>
                 <div class="stat-value">{{ number_format($stats['total_revenue'], 0) }}</div>
                 <div class="stat-note">KES</div>
+            </div>
+        </a>
+        <a class="stat-link" href="{{ route('admin.dashboard') }}#pending-cheque-approvals">
+            <div class="stat-card stat-card--cheque">
+                <div class="stat-icon"><i class="fas fa-file-signature"></i></div>
+                <div class="stat-label">Pending Cheques</div>
+                <div class="stat-value">{{ $stats['pending_cheque_payments'] }}</div>
+                <div class="stat-note">Need approval</div>
             </div>
         </a>
     </div>
@@ -302,7 +392,51 @@
                 @endforelse
             </div>
         </div>
+
+        <div class="list-card" id="pending-cheque-approvals">
+            <div class="list-head">
+                <h2>Pending Cheque Approvals</h2>
+                <a href="{{ route('admin.tickets', ['status' => 'pending']) }}" class="btn btn-secondary" style="padding: 6px 10px; font-size: 12px;">All pending tickets</a>
+            </div>
+            <div class="list-body">
+                @forelse($pending_cheque_payments as $payment)
+                    @php
+                        $ticket = $payment->ticket;
+                        $displayName = $ticket?->name ?: $ticket?->company_name ?: 'Unknown';
+                    @endphp
+                    <div class="list-item">
+                        <div class="list-main">
+                            <div class="list-name">{{ $displayName }}</div>
+                            <div class="list-id">{{ $ticket ? substr($ticket->uuid, 0, 10) . '...' : '-' }}</div>
+                        </div>
+                        <div class="list-meta">
+                            KES {{ number_format($payment->amount, 0) }}
+                            &middot; Cheque {{ $payment->cheque_number ?? 'N/A' }}
+                            &middot; {{ $payment->bank_name ?? 'N/A' }}
+                        </div>
+                        <div class="list-meta">
+                            Submitted {{ $payment->updated_at ? \Carbon\Carbon::parse($payment->updated_at)->format('M d, g:i A') : '-' }}
+                        </div>
+                        <div class="list-actions">
+                            @if($ticket)
+                                <a href="{{ route('admin.ticket.detail', $ticket->id) }}" class="btn btn-secondary" style="padding: 6px 10px; font-size: 12px;">Open ticket</a>
+                            @endif
+                            <form method="POST" action="{{ route('admin.payments.approve-cheque', $payment->id) }}">
+                                @csrf
+                                <button type="submit" class="btn btn-primary" style="padding: 6px 10px; font-size: 12px;">Approve</button>
+                            </form>
+                            <form method="POST" action="{{ route('admin.payments.reject-cheque', $payment->id) }}">
+                                @csrf
+                                <input type="hidden" name="reason" value="Cheque payment rejected from dashboard.">
+                                <button type="submit" class="btn btn-danger" style="padding: 6px 10px; font-size: 12px;">Reject</button>
+                            </form>
+                        </div>
+                    </div>
+                @empty
+                    <div class="list-item"><div class="list-meta">No cheque payments are waiting for approval.</div></div>
+                @endforelse
+            </div>
+        </div>
     </div>
 </div>
 @endsection
-

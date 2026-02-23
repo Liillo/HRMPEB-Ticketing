@@ -56,17 +56,32 @@
 
                 <div style="margin-bottom: 16px;">
                     <label style="color: var(--text-secondary); font-size: 14px;">Name</label>
-                    <p style="margin-top: 4px;">{{ $ticket->name ?? 'N/A' }}</p>
+                    <p style="margin-top: 4px;">
+                        {{ $ticket->name ?? ($ticket->company_name ?? 'N/A') }}
+                        @if(!$ticket->name && $ticket->company_name)
+                            <span style="color: var(--text-secondary); font-size: 12px;">(Company contact)</span>
+                        @endif
+                    </p>
                 </div>
 
                 <div style="margin-bottom: 16px;">
                     <label style="color: var(--text-secondary); font-size: 14px;">Email</label>
-                    <p style="margin-top: 4px;">{{ $ticket->email ?? 'N/A' }}</p>
+                    <p style="margin-top: 4px;">
+                        {{ $ticket->email ?? ($ticket->company_email ?? 'N/A') }}
+                        @if(!$ticket->email && $ticket->company_email)
+                            <span style="color: var(--text-secondary); font-size: 12px;">(Company contact)</span>
+                        @endif
+                    </p>
                 </div>
 
                 <div style="margin-bottom: 16px;">
                     <label style="color: var(--text-secondary); font-size: 14px;">Phone</label>
-                    <p style="margin-top: 4px;">{{ $ticket->phone ?? 'N/A' }}</p>
+                    <p style="margin-top: 4px;">
+                        {{ $ticket->phone ?? ($ticket->company_phone ?? 'N/A') }}
+                        @if(!$ticket->phone && $ticket->company_phone)
+                            <span style="color: var(--text-secondary); font-size: 12px;">(Company contact)</span>
+                        @endif
+                    </p>
                 </div>
 
                 <div style="margin-bottom: 16px;">
@@ -121,35 +136,6 @@
                 </div>
                 @endif
             </div>
-
-            @if(isset($manifestTickets) && $manifestTickets->count() > 0)
-            <div class="card" style="margin-bottom: 24px;">
-                <h2 style="color: var(--color-primary); margin-bottom: 16px;">Corporate Manifest</h2>
-                <div style="border: 1px solid var(--color-border); border-radius: 8px; overflow: hidden;">
-                    @foreach($manifestTickets as $index => $manifestTicket)
-                    <div style="padding: 10px 12px; border-bottom: 1px solid var(--color-border);">
-                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-                            <div style="font-weight: 600;">{{ $index + 1 }}. {{ $manifestTicket->name ?? 'N/A' }}</div>
-                            @if((int) $manifestTicket->scan_count > 0)
-                            <span title="Checked in" style="color: var(--color-success); font-size: 14px;">
-                                <i class="fas fa-check-circle"></i>
-                            </span>
-                            @endif
-                        </div>
-                        <div style="font-size: 13px; color: var(--text-secondary);">
-                            {{ $manifestTicket->email ?? 'N/A' }} &middot; {{ $manifestTicket->phone ?? 'N/A' }}
-                            @if($manifestTicket->staff_no || $manifestTicket->ihrm_no)
-                                <br>
-                                {{ $manifestTicket->staff_no ? 'Staff No.: ' . $manifestTicket->staff_no : '' }}
-                                @if($manifestTicket->staff_no && $manifestTicket->ihrm_no) &middot; @endif
-                                {{ $manifestTicket->ihrm_no ? 'IHRM No.: ' . $manifestTicket->ihrm_no : '' }}
-                            @endif
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
-            </div>
-            @endif
 
             @if($ticket->payment)
             <div class="card">

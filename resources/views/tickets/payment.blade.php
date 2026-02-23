@@ -118,10 +118,18 @@
             
             <div class="card">
                 <h3 style="color: var(--color-primary); margin-bottom: 20px;"><i class="fas fa-wallet"></i> Payment Method</h3>
+                @php
+                    $notificationEmail = $ticket->email ?? $ticket->company_email;
+                @endphp
 
                 @if($ticket->payment && $ticket->payment->method === \App\Models\Payment::METHOD_CHEQUE && $ticket->payment->status === 'pending')
                     <div class="alert alert-success" style="margin-bottom: 16px;">
                         Cheque details already submitted. Awaiting admin verification.
+                        @if($notificationEmail)
+                            <div style="margin-top: 8px;">
+                                You can close this page and check your emails. Your ticket will be sent once approval is done.
+                            </div>
+                        @endif
                     </div>
                 @endif
                 
@@ -165,6 +173,9 @@
                         </div>
                         <small style="color: var(--text-secondary); display: block; margin-top: -8px; margin-bottom: 12px;">
                             Cheque payments are manually verified by an admin.
+                            @if($notificationEmail)
+                                Once approved, your ticket will be sent to the respective emails.
+                            @endif
                         </small>
                     </div>
                     
@@ -220,7 +231,11 @@ document.getElementById('payment-form').addEventListener('submit', function(e) {
                 return;
             }
 
-            successDiv.textContent = data.message || 'Payment submitted successfully.';
+            if (method === 'cheque') {
+                successDiv.textContent = 'Cheque submitted. Approval is manual. Once approved, your ticket will be emailed to {{ $notificationEmail ?? "your email" }}.';
+            } else {
+                successDiv.textContent = data.message || 'Payment submitted successfully.';
+            }
             successDiv.style.display = 'block';
         } else {
             errorDiv.textContent = data.message || 'Payment failed. Please try again.';
@@ -276,4 +291,3 @@ setMethodFields();
 </style>
 @endpush
 @endsection
-
