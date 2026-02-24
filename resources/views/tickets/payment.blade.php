@@ -127,8 +127,7 @@
                         Cheque details already submitted. Awaiting admin verification.
                         @if($notificationEmail)
                             <div style="margin-top: 8px;">
-                                You can close this page and check your emails. Your ticket will be sent once approval is done.
-                            </div>
+                                You can close this page and check your emails. Your ticket will be sent once approval is done.                            </div>
                         @endif
                     </div>
                 @endif
@@ -161,11 +160,7 @@
                         </div>
                         <div class="form-group">
                             <label for="bank_name"><i class="fas fa-university"></i> Bank Name</label>
-                            <input type="text" id="bank_name" name="bank_name" placeholder="Bank name">
-                        </div>
-                        <div class="form-group">
-                            <label for="cheque_date"><i class="fas fa-calendar-alt"></i> Cheque Date</label>
-                            <input type="date" id="cheque_date" name="cheque_date">
+                            <input type="text" id="bank_name" name="bank_name" placeholder="Bank name (optional)">
                         </div>
                         <div class="form-group">
                             <label for="payer_name"><i class="fas fa-user"></i> Payer Name</label>
@@ -200,7 +195,6 @@ document.getElementById('payment-form').addEventListener('submit', function(e) {
     const phone = document.getElementById('phone').value;
     const chequeNumber = document.getElementById('cheque_number').value;
     const bankName = document.getElementById('bank_name').value;
-    const chequeDate = document.getElementById('cheque_date').value;
     const payerName = document.getElementById('payer_name').value;
     
     btn.disabled = true;
@@ -219,7 +213,6 @@ document.getElementById('payment-form').addEventListener('submit', function(e) {
             phone: phone,
             cheque_number: chequeNumber,
             bank_name: bankName,
-            cheque_date: chequeDate,
             payer_name: payerName
         })
     })
@@ -259,7 +252,6 @@ function setMethodFields() {
     const phone = document.getElementById('phone');
     const chequeNumber = document.getElementById('cheque_number');
     const bankName = document.getElementById('bank_name');
-    const chequeDate = document.getElementById('cheque_date');
     const payerName = document.getElementById('payer_name');
 
     const isMpesa = method === 'mpesa';
@@ -269,8 +261,7 @@ function setMethodFields() {
 
     phone.required = isMpesa;
     chequeNumber.required = !isMpesa;
-    bankName.required = !isMpesa;
-    chequeDate.required = !isMpesa;
+    bankName.required = false;
     payerName.required = !isMpesa;
 }
 

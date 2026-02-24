@@ -24,7 +24,7 @@ class EventController extends Controller
             ->withSum([
                 'tickets as pending_attendees_count' => function ($query) {
                     $query->where('status', 'pending')
-                        ->where('created_at', '>=', now()->subHours(24));
+                        ->where('created_at', '>=', now()->subHours(48));
                 }
             ], 'number_of_attendees')
             ->latest()

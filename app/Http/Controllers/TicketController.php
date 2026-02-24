@@ -306,7 +306,7 @@ class TicketController extends Controller
 
             return redirect()
                 ->route('payment.pending.form')
-                ->with('error', 'This pending payment has expired after 24 hours. Please start the booking process again.');
+                ->with('error', 'This pending payment has expired after 48 hours. Please start the booking process again.');
         }
 
         return view('tickets.payment', compact('ticket'));
@@ -329,7 +329,7 @@ class TicketController extends Controller
         ]);
 
         $pendingTicket = Ticket::where('status', 'pending')
-            ->where('created_at', '>=', now()->subHours(24))
+            ->where('created_at', '>=', now()->subHours(48))
             ->where(function ($query) use ($data) {
                 $query->where('email', $data['email'])
                     ->orWhere('company_email', $data['email']);
@@ -378,7 +378,6 @@ class TicketController extends Controller
             'phone' => 'nullable|string|max:20',
             'cheque_number' => 'nullable|string|max:100',
             'bank_name' => 'nullable|string|max:255',
-            'cheque_date' => 'nullable|date',
             'payer_name' => 'nullable|string|max:255',
         ]);
 
@@ -389,7 +388,7 @@ class TicketController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'This pending payment expired after 24 hours. Please start the booking process again.'
+                'message' => 'This pending payment expired after 48 hours. Please start the booking process again.'
             ], 410);
         }
 
@@ -425,8 +424,7 @@ class TicketController extends Controller
         if ($method === Payment::METHOD_CHEQUE) {
             $chequeData = validator($validated, [
                 'cheque_number' => 'required|string|max:100',
-                'bank_name' => 'required|string|max:255',
-                'cheque_date' => 'required|date',
+                'bank_name' => 'nullable|string|max:255',
                 'payer_name' => 'required|string|max:255',
             ])->validate();
 
@@ -442,8 +440,8 @@ class TicketController extends Controller
                 'amount' => $ticket->amount,
                 'status' => 'pending',
                 'cheque_number' => trim((string) $chequeData['cheque_number']),
-                'bank_name' => trim((string) $chequeData['bank_name']),
-                'cheque_date' => $chequeData['cheque_date'],
+                'bank_name' => isset($chequeData['bank_name']) ? trim((string) $chequeData['bank_name']) : null,
+                'cheque_date' => null,
                 'payer_name' => trim((string) $chequeData['payer_name']),
                 'response_description' => 'Cheque submitted and awaiting admin verification.',
             ]);
@@ -538,7 +536,7 @@ class TicketController extends Controller
 
             return redirect()
                 ->route('payment.pending.form')
-                ->with('error', 'This pending payment has expired after 24 hours. Please start the booking process again.');
+                ->with('error', 'This pending payment has expired after 48 hours. Please start the booking process again.');
         }
 
         return view('tickets.waiting', compact('ticket'));
@@ -555,7 +553,7 @@ class TicketController extends Controller
 
                 return response()->json([
                     'status' => 'expired',
-                    'message' => 'This pending payment expired after 24 hours. Please start the booking process again.',
+                    'message' => 'This pending payment expired after 48 hours. Please start the booking process again.',
                     'redirect' => route('payment.pending.form')
                 ], 410);
             }
@@ -751,25 +749,32 @@ class TicketController extends Controller
     public function retrieveTicket(Request $request)
     {
         $data = $request->validate([
-            'mpesa_receipt' => 'required|string|max:50',
+            'payment_reference' => 'required|string|max:100',
             'phone' => 'required|string|max:20',
             'resend_email' => 'nullable|boolean',
         ]);
 
-        $receipt = strtoupper(str_replace(' ', '', trim($data['mpesa_receipt'])));
+        $reference = strtoupper(str_replace(' ', '', trim($data['payment_reference'])));
         $phone = trim($data['phone']);
 
         $payment = Payment::with('ticket')
             ->where('status', 'success')
-            ->whereNotNull('mpesa_receipt')
-            ->whereRaw('UPPER(REPLACE(mpesa_receipt, " ", "")) = ?', [$receipt])
+            ->where(function ($query) use ($reference) {
+                $query->where(function ($mpesaQuery) use ($reference) {
+                    $mpesaQuery->whereNotNull('mpesa_receipt')
+                        ->whereRaw('UPPER(REPLACE(mpesa_receipt, " ", "")) = ?', [$reference]);
+                })->orWhere(function ($chequeQuery) use ($reference) {
+                    $chequeQuery->whereNotNull('cheque_number')
+                        ->whereRaw('UPPER(REPLACE(cheque_number, " ", "")) = ?', [$reference]);
+                });
+            })
             ->latest('updated_at')
             ->first();
 
         if (!$payment || !$payment->ticket) {
             return back()
                 ->withInput()
-                ->with('error', 'No successful payment matched the provided M-Pesa receipt code.');
+                ->with('error', 'No successful payment matched the provided payment reference.');
         }
 
         $sourceTicket = $payment->ticket;
@@ -790,7 +795,7 @@ class TicketController extends Controller
         if (!$ticket) {
             return back()
                 ->withInput()
-                ->with('error', 'No paid ticket matched that M-Pesa receipt code and phone number.');
+                ->with('error', 'No paid ticket matched that payment reference and phone number.');
         }
 
         if ((bool) $request->boolean('resend_email')) {
@@ -826,7 +831,7 @@ class TicketController extends Controller
     {
         return $ticket->status === 'pending'
             && $ticket->created_at !== null
-            && $ticket->created_at->lt(now()->subHours(24));
+            && $ticket->created_at->lt(now()->subHours(48));
     }
 
     private function deleteExpiredPendingTicket(Ticket $ticket): void
@@ -847,7 +852,7 @@ class TicketController extends Controller
     private function purgeExpiredPendingTickets(): void
     {
         $deleted = Ticket::where('status', 'pending')
-            ->where('created_at', '<', now()->subHours(24))
+            ->where('created_at', '<', now()->subHours(48))
             ->delete();
 
         if ($deleted > 0) {

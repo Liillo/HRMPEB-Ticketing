@@ -13,16 +13,16 @@
 
                 <h1 style="text-align: center; color: var(--color-primary); margin-bottom: 12px;">Retrieve Your Ticket</h1>
                 <p style="text-align: center; color: var(--text-secondary); margin-bottom: 24px;">
-                    Enter your M-Pesa receipt code and ticket phone number to access your paid ticket.
+                    Enter your payment reference (M-Pesa receipt code or cheque number) and ticket phone number to access your paid ticket.
                 </p>
 
                 <form method="POST" action="{{ route('ticket.retrieve') }}">
                     @csrf
 
                     <div class="form-group">
-                        <label for="mpesa_receipt">M-Pesa Receipt Code</label>
-                        <input id="mpesa_receipt" type="text" name="mpesa_receipt" value="{{ old('mpesa_receipt') }}" required>
-                        @error('mpesa_receipt')
+                        <label for="payment_reference">Payment Reference</label>
+                        <input id="payment_reference" type="text" name="payment_reference" value="{{ old('payment_reference') }}" placeholder="M-Pesa receipt code or cheque number" required>
+                        @error('payment_reference')
                             <span class="error">{{ $message }}</span>
                         @enderror
                     </div>

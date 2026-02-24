@@ -421,11 +421,11 @@
                             @if($ticket)
                                 <a href="{{ route('admin.ticket.detail', $ticket->id) }}" class="btn btn-secondary" style="padding: 6px 10px; font-size: 12px;">Open ticket</a>
                             @endif
-                            <form method="POST" action="{{ route('admin.payments.approve-cheque', $payment->id) }}">
+                            <form method="POST" action="{{ route('admin.payments.approve-cheque', $payment->id) }}" onsubmit="return confirm('Are you sure you want to approve this cheque payment? This will mark the ticket as paid and send ticket email(s).');">
                                 @csrf
                                 <button type="submit" class="btn btn-primary" style="padding: 6px 10px; font-size: 12px;">Approve</button>
                             </form>
-                            <form method="POST" action="{{ route('admin.payments.reject-cheque', $payment->id) }}">
+                            <form method="POST" action="{{ route('admin.payments.reject-cheque', $payment->id) }}" onsubmit="return confirm('Are you sure you want to reject this cheque payment? This will mark the ticket as failed.');">
                                 @csrf
                                 <input type="hidden" name="reason" value="Cheque payment rejected from dashboard.">
                                 <button type="submit" class="btn btn-danger" style="padding: 6px 10px; font-size: 12px;">Reject</button>
