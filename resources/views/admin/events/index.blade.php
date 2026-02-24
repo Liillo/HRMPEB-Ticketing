@@ -19,6 +19,11 @@
         gap: 14px;
     }
 
+    .events-group-title {
+        color: var(--color-primary);
+        margin: 24px 0 12px;
+    }
+
     .event-card {
         position: relative;
         border: 1px solid var(--color-border);
@@ -166,74 +171,88 @@
     </a>
 </div>
 
+@php
+    $activeEvents = $events->where('is_active', true);
+    $inactiveEvents = $events->where('is_active', false);
+    $eventGroups = [
+        ['title' => 'Active Events', 'events' => $activeEvents],
+        ['title' => 'Inactive Events', 'events' => $inactiveEvents],
+    ];
+@endphp
+
 @if($events->count() > 0)
-    <div class="events-grid">
-        @foreach($events as $event)
-            @php
-                $paidAttendees = (int) ($event->paid_attendees_count ?? 0);
-                $pendingAttendees = (int) ($event->pending_attendees_count ?? 0);
-                $reservedAttendees = $paidAttendees + $pendingAttendees;
-                $remainingCapacity = max(0, (int) $event->max_capacity - $reservedAttendees);
-                $isSoldOut = $remainingCapacity <= 0;
-            @endphp
-            <div
-                class="event-card {{ $event->is_active ? 'event-card--active' : 'event-card--inactive' }}"
-                data-url="{{ route('admin.events.show', $event->id) }}"
-                onclick="window.location.href=this.dataset.url"
-            >
-                <div class="event-icon"><i class="fas fa-calendar-alt"></i></div>
-                <div class="event-title-row">
-                    <div class="event-title">{{ $event->name }}</div>
-                    <span class="event-status-badge {{ $isSoldOut ? 'event-status-badge--soldout' : 'event-status-badge--open' }}">
-                        {{ $isSoldOut ? 'Sold Out' : 'Open' }}
-                    </span>
-                </div>
+    @foreach($eventGroups as $group)
+        @if($group['events']->count() > 0)
+            <h2 class="events-group-title">{{ $group['title'] }} ({{ $group['events']->count() }})</h2>
+            <div class="events-grid">
+                @foreach($group['events'] as $event)
+                    @php
+                        $paidAttendees = (int) ($event->paid_attendees_count ?? 0);
+                        $pendingAttendees = (int) ($event->pending_attendees_count ?? 0);
+                        $reservedAttendees = $paidAttendees + $pendingAttendees;
+                        $remainingCapacity = max(0, (int) $event->max_capacity - $reservedAttendees);
+                        $isSoldOut = $remainingCapacity <= 0;
+                    @endphp
+                    <div
+                        class="event-card {{ $event->is_active ? 'event-card--active' : 'event-card--inactive' }}"
+                        data-url="{{ route('admin.events.show', $event->id) }}"
+                        onclick="window.location.href=this.dataset.url"
+                    >
+                        <div class="event-icon"><i class="fas fa-calendar-alt"></i></div>
+                        <div class="event-title-row">
+                            <div class="event-title">{{ $event->name }}</div>
+                            <span class="event-status-badge {{ $isSoldOut ? 'event-status-badge--soldout' : 'event-status-badge--open' }}">
+                                {{ $isSoldOut ? 'Sold Out' : 'Open' }}
+                            </span>
+                        </div>
 
-                <div class="event-meta">
-                    <div>
-                        <div class="event-meta-label">Date</div>
-                        <div class="event-meta-value">{{ $event->event_date->format('M d, Y') }}</div>
-                    </div>
-                    <div>
-                        <div class="event-meta-label">Location</div>
-                        <div class="event-meta-value">{{ $event->location ?? 'N/A' }}</div>
-                    </div>
-                    <div>
-                        <div class="event-meta-label">Tickets Sold</div>
-                        <div class="event-meta-value">{{ $event->paid_tickets_count }}</div>
-                    </div>
-                    <div>
-                        <div class="event-meta-label">Capacity</div>
-                        <div class="event-meta-value">{{ $reservedAttendees }} / {{ (int) $event->max_capacity }}</div>
-                    </div>
-                    <div>
-                        <div class="event-meta-label">Remaining Slots</div>
-                        <div class="event-meta-value">{{ $remainingCapacity }}</div>
-                    </div>
-                    <div>
-                        <div class="event-meta-label">Scanned/Unscanned</div>
-                        <div class="event-meta-value">{{ $event->scannedTicketsCount() }} / {{ $event->unscannedTicketsCount() }}</div>
-                    </div>
-                </div>
+                        <div class="event-meta">
+                            <div>
+                                <div class="event-meta-label">Date</div>
+                                <div class="event-meta-value">{{ $event->event_date->format('M d, Y') }}</div>
+                            </div>
+                            <div>
+                                <div class="event-meta-label">Location</div>
+                                <div class="event-meta-value">{{ $event->location ?? 'N/A' }}</div>
+                            </div>
+                            <div>
+                                <div class="event-meta-label">Tickets Sold</div>
+                                <div class="event-meta-value">{{ $event->paid_tickets_count }}</div>
+                            </div>
+                            <div>
+                                <div class="event-meta-label">Capacity</div>
+                                <div class="event-meta-value">{{ $reservedAttendees }} / {{ (int) $event->max_capacity }}</div>
+                            </div>
+                            <div>
+                                <div class="event-meta-label">Remaining Slots</div>
+                                <div class="event-meta-value">{{ $remainingCapacity }}</div>
+                            </div>
+                            <div>
+                                <div class="event-meta-label">Scanned/Unscanned</div>
+                                <div class="event-meta-value">{{ $event->scannedTicketsCount() }} / {{ $event->unscannedTicketsCount() }}</div>
+                            </div>
+                        </div>
 
-                <div class="event-actions">
-                    <form method="POST" action="{{ route('admin.events.toggle', $event->id) }}" style="display: inline;" onclick="event.stopPropagation();">
-                        @csrf
-                        <button type="submit" class="btn {{ $event->is_active ? 'btn-success' : 'btn-secondary' }}" style="padding: 6px 12px; font-size: 12px;">
-                            <i class="fas fa-{{ $event->is_active ? 'check-circle' : 'times-circle' }}"></i>
-                            {{ $event->is_active ? 'Active' : 'Inactive' }}
-                        </button>
-                    </form>
-                    <a href="{{ route('admin.events.show', $event->id) }}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="event.stopPropagation();">
-                        <i class="fas fa-eye"></i> View
-                    </a>
-                    <a href="{{ route('admin.events.edit', $event->id) }}" class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;" onclick="event.stopPropagation();">
-                        <i class="fas fa-edit"></i> Edit
-                    </a>
-                </div>
+                        <div class="event-actions">
+                            <form method="POST" action="{{ route('admin.events.toggle', $event->id) }}" style="display: inline;" onclick="event.stopPropagation();">
+                                @csrf
+                                <button type="submit" class="btn {{ $event->is_active ? 'btn-success' : 'btn-secondary' }}" style="padding: 6px 12px; font-size: 12px;">
+                                    <i class="fas fa-{{ $event->is_active ? 'check-circle' : 'times-circle' }}"></i>
+                                    {{ $event->is_active ? 'Active' : 'Inactive' }}
+                                </button>
+                            </form>
+                            <a href="{{ route('admin.events.show', $event->id) }}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="event.stopPropagation();">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                            <a href="{{ route('admin.events.edit', $event->id) }}" class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;" onclick="event.stopPropagation();">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                        </div>
+                    </div>
+                @endforeach
             </div>
-        @endforeach
-    </div>
+        @endif
+    @endforeach
 @else
     <div class="card" style="text-align: center; color: var(--text-secondary);">
         <i class="fas fa-inbox" style="font-size: 44px; margin-bottom: 10px; display: block;"></i>

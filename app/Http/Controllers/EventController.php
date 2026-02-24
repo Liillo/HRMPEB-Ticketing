@@ -27,7 +27,8 @@ class EventController extends Controller
                         ->where('created_at', '>=', now()->subHours(48));
                 }
             ], 'number_of_attendees')
-            ->latest()
+            ->orderBy('event_date')
+            ->orderByDesc('id')
             ->get();
         return view('admin.events.index', compact('events'));
     }
