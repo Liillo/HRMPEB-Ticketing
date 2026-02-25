@@ -5,7 +5,7 @@
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
     <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="background: linear-gradient(135deg, #7c6a46 0%, #d4a574 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+        <div style="background: linear-gradient(135deg, #1F3C88 0%, #F4B400 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
             <div style="margin-bottom: 12px;">
                 <img src="{{ $message->embed(public_path('images/hrmpeb-logo.png')) }}" alt="HRMPEB Logo" style="max-width: 160px; width: 100%; height: auto;">
             </div>
@@ -14,7 +14,7 @@
         </div>
         
         <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
-            <h2 style="color: #7c6a46;">{{ $ticket->event->name }}</h2>
+            <h2 style="color: #1F3C88;">{{ $ticket->event->name }}</h2>
             <p><strong>Date:</strong> {{ $ticket->event->event_date->format('l, F j, Y') }}</p>
             @if($ticket->event->location)
             <p><strong>Location:</strong> {{ $ticket->event->location }}</p>
@@ -58,3 +58,4 @@
     </div>
 </body>
 </html>
+

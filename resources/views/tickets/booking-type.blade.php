@@ -82,7 +82,8 @@
     }
     .booking-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 4px 12px rgba(124, 106, 70, 0.2);
+        box-shadow: 0 4px 12px rgba(31, 60, 136, 0.2);
     }
 </style>
 @endsection
+

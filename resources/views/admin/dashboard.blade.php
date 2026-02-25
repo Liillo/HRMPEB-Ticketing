@@ -10,9 +10,9 @@
         padding: 16px 18px;
         border-radius: 14px;
         background:
-            radial-gradient(120% 140% at 0% 0%, rgba(212, 165, 116, 0.2) 0%, rgba(212, 165, 116, 0) 42%),
-            linear-gradient(180deg, #fffdf9 0%, #ffffff 100%);
-        border: 1px solid rgba(124, 106, 70, 0.14);
+            radial-gradient(120% 140% at 0% 0%, rgba(244, 180, 0, 0.2) 0%, rgba(244, 180, 0, 0) 42%),
+            linear-gradient(180deg, #ffffff 0%, #ffffff 100%);
+        border: 1px solid rgba(31, 60, 136, 0.14);
     }
     .dash-title { color: var(--color-primary); margin-bottom: 6px; letter-spacing: 0.01em; }
     .dash-subtitle { color: var(--text-secondary); font-size: 14px; }
@@ -218,7 +218,7 @@
         bottom: 10px;
         width: 3px;
         border-radius: 999px;
-        background: rgba(124, 106, 70, 0.18);
+        background: rgba(31, 60, 136, 0.18);
     }
 
     .list-main {
@@ -440,3 +440,4 @@
     </div>
 </div>
 @endsection
+

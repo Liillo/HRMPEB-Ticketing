@@ -12,7 +12,7 @@
     background-position: right 16px center;
     background-size: 20px;
     padding-right: 48px;
-    background-color: #faf6f0;
+    background-color: #F1F7FB;
     border: 2px solid var(--color-border);
     font-weight: 500;
     transition: all 0.3s ease;
@@ -25,7 +25,7 @@
 
 .custom-select:focus {
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(124, 106, 70, 0.1);
+    box-shadow: 0 0 0 3px rgba(31, 60, 136, 0.1);
 }
 
 .attendee-badge {
@@ -305,3 +305,4 @@ function updateSummary() {
 document.addEventListener('DOMContentLoaded', updateSummary);
 </script>
 @endsection
+

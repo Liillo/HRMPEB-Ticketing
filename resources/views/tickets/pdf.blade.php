@@ -12,13 +12,13 @@
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
-            color: #2d2416;
+            color: #444444;
             background: #f4efe7;
             font-size: 10pt;
         }
 
         .ticket-shell {
-            border: 2px solid #7c6a46;
+            border: 2px solid #1F3C88;
             border-radius: 12px;
             overflow: hidden;
             background: #ffffff;
@@ -26,7 +26,7 @@
         }
 
         .ticket-head {
-            background: #7c6a46;
+            background: #1F3C88;
             color: #ffffff;
             padding: 10px 14px;
         }
@@ -83,7 +83,7 @@
             text-align: center;
             padding: 12px;
             background: #f7f6f8;
-            border-left: 2px dashed #d4a574;
+            border-left: 2px dashed #F4B400;
         }
 
         .left-top-grid {
@@ -96,14 +96,14 @@
         .detail-box {
             border: 1px solid #e2d2b8;
             border-radius: 8px;
-            background: #fffdf9;
+            background: #ffffff;
             padding: 10px;
         }
 
         .ticket-info-row {
             margin-bottom: 8px;
             padding-bottom: 6px;
-            border-bottom: 1px solid #e8dcc8;
+            border-bottom: 1px solid #D6E6F3;
         }
 
         .ticket-info-row:last-child {
@@ -113,7 +113,7 @@
         }
 
         .ticket-info-label {
-            color: #6b5d48;
+            color: #556270;
             font-size: 10px;
             text-transform: uppercase;
             letter-spacing: 0.3px;
@@ -121,7 +121,7 @@
         }
 
         .ticket-info-value {
-            color: #2d2416;
+            color: #444444;
             font-size: 14px;
             font-weight: 700;
             line-height: 1.25;
@@ -130,9 +130,9 @@
         .event-meta {
             border: 1px solid #e2d2b8;
             border-radius: 8px;
-            background: #fffdf9;
+            background: #ffffff;
             padding: 10px;
-            color: #6b5d48;
+            color: #556270;
             font-size: 11px;
             line-height: 1.35;
         }
@@ -143,7 +143,7 @@
         }
 
         .ticket-qr-title {
-            color: #7c6a46;
+            color: #1F3C88;
             font-size: 11px;
             font-weight: 700;
             text-transform: uppercase;
@@ -177,7 +177,7 @@
         .footer-note {
             margin-top: 10px;
             text-align: left;
-            color: #6b5d48;
+            color: #556270;
             font-size: 10px;
             line-height: 1.35;
         }
@@ -313,3 +313,4 @@
     </div>
 </body>
 </html>
+

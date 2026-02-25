@@ -6,14 +6,14 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
     .ticket-shell {
-        border: 2px solid #7c6a46;
+        border: 2px solid #1F3C88;
         border-radius: 10px;
         overflow: hidden;
         background: #ffffff;
     }
 
     .ticket-head {
-        background: #7c6a46;
+        background: #1F3C88;
         color: #fff;
         padding: 14px 18px;
     }
@@ -60,7 +60,7 @@
         width: 64%;
         vertical-align: top;
         padding: 14px;
-        background: #fcf8f1;
+        background: #F2F8FC;
     }
 
     .ticket-right-column {
@@ -68,13 +68,13 @@
         vertical-align: top;
         text-align: center;
         padding: 14px 12px;
-        border-left: 2px dashed #d4a574;
+        border-left: 2px dashed #F4B400;
     }
 
     .ticket-info-row {
         margin-bottom: 8px;
         padding-bottom: 6px;
-        border-bottom: 1px solid #efe2cc;
+        border-bottom: 1px solid #DCEAF5;
     }
 
     .ticket-info-row:last-child {
@@ -84,7 +84,7 @@
     }
 
     .ticket-info-label {
-        color: #6b5d48;
+        color: #556270;
         font-size: 10px;
         display: block;
         margin-bottom: 2px;
@@ -93,7 +93,7 @@
     }
 
     .ticket-info-value {
-        color: #2d2416;
+        color: #444444;
         font-size: 15px;
         font-weight: 700;
         line-height: 1.25;
@@ -107,7 +107,7 @@
     }
 
     .ticket-qr-title {
-        color: #7c6a46;
+        color: #1F3C88;
         font-size: 14px;
         font-weight: 700;
         text-transform: uppercase;
@@ -117,7 +117,7 @@
 
     .qr-wrap {
         display: inline-block;
-        border: 1px solid #e8dcc8;
+        border: 1px solid #D6E6F3;
         border-radius: 8px;
         padding: 8px;
         background: #fff;
@@ -125,7 +125,7 @@
 
     .ticket-id-box {
         margin-top: 10px;
-        background: #f9f4ec;
+        background: #EEF6FB;
         border-radius: 6px;
         padding: 8px;
         text-align: left;
@@ -133,17 +133,17 @@
 
     .event-meta {
         margin-top: 0;
-        background: #f9f4ec;
+        background: #EEF6FB;
         border-radius: 6px;
         padding: 8px;
         font-size: 13px;
-        color: #6b5d48;
+        color: #556270;
         line-height: 1.35;
     }
 
     .footer-note {
         text-align: left;
-        color: #6b5d48;
+        color: #556270;
         font-size: 12px;
         margin-top: 8px;
         line-height: 1.4;
@@ -163,8 +163,8 @@
     }
 
     .ticket-section-block {
-        background: #fffdf9;
-        border: 1px solid #efe2cc;
+        background: #ffffff;
+        border: 1px solid #DCEAF5;
         border-radius: 6px;
         padding: 8px;
         margin-bottom: 10px;
@@ -217,7 +217,7 @@
     .attendee-table th {
         font-weight: 700;
         color: var(--text-primary);
-        background: #faf6f0;
+        background: #F1F7FB;
     }
 
     .attendee-table tbody tr:last-child td {
@@ -225,7 +225,7 @@
     }
 
     .attendee-row-selected td {
-        background: #f6efe3;
+        background: #E8F2F9;
     }
 
     .attendee-table .col-id { width: 52px; }
@@ -273,7 +273,7 @@
 
         .ticket-right-column {
             border-left: none;
-            border-top: 2px dashed #d4a574;
+            border-top: 2px dashed #F4B400;
         }
 
         .summary-grid {
@@ -517,3 +517,4 @@
     </div>
 </div>
 @endsection
+

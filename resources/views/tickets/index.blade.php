@@ -121,7 +121,7 @@
 <style>
 .event-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 6px 16px rgba(124, 106, 70, 0.2);
+    box-shadow: 0 6px 16px rgba(31, 60, 136, 0.2);
 }
 
 .event-card {
@@ -156,9 +156,9 @@
     text-align: center;
     padding: 16px 18px;
     background: linear-gradient(135deg, #f3e7d4 0%, #fff7eb 100%);
-    border: 1px solid rgba(124, 106, 70, 0.22);
+    border: 1px solid rgba(31, 60, 136, 0.22);
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(124, 106, 70, 0.08);
+    box-shadow: 0 2px 8px rgba(31, 60, 136, 0.08);
 }
 
 @media (max-width: 768px) {
@@ -173,3 +173,4 @@
 }
 </style>
 @endsection
+
