@@ -301,35 +301,22 @@ class TicketController extends Controller
                 ->with('success', $message);
         }
 
-        if ($this->isPendingTicketExpired($ticket)) {
-            $this->deleteExpiredPendingTicket($ticket);
-
-            return redirect()
-                ->route('payment.pending.form')
-                ->with('error', 'This pending payment has expired after 48 hours. Please start the booking process again.');
-        }
-
         return view('tickets.payment', compact('ticket'));
     }
 
     public function pendingPaymentForm()
     {
-        $this->purgeExpiredPendingTickets();
-
         return view('tickets.pending-payment');
     }
 
     public function pendingPayment(Request $request)
     {
-        $this->purgeExpiredPendingTickets();
-
         $data = $request->validate([
             'email' => 'required|email',
             'phone' => 'required|string|max:20',
         ]);
 
         $pendingTicket = Ticket::where('status', 'pending')
-            ->where('created_at', '>=', now()->subHours(48))
             ->where(function ($query) use ($data) {
                 $query->where('email', $data['email'])
                     ->orWhere('company_email', $data['email']);
@@ -382,15 +369,6 @@ class TicketController extends Controller
         ]);
 
         $ticket = Ticket::where('uuid', $uuid)->firstOrFail();
-
-        if ($this->isPendingTicketExpired($ticket)) {
-            $this->deleteExpiredPendingTicket($ticket);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'This pending payment expired after 48 hours. Please start the booking process again.'
-            ], 410);
-        }
 
         if ($ticket->status === 'paid') {
             return response()->json([
@@ -531,14 +509,6 @@ class TicketController extends Controller
     {
         $ticket = Ticket::where('uuid', $uuid)->firstOrFail();
 
-        if ($this->isPendingTicketExpired($ticket)) {
-            $this->deleteExpiredPendingTicket($ticket);
-
-            return redirect()
-                ->route('payment.pending.form')
-                ->with('error', 'This pending payment has expired after 48 hours. Please start the booking process again.');
-        }
-
         return view('tickets.waiting', compact('ticket'));
     }
 
@@ -547,16 +517,6 @@ class TicketController extends Controller
     {
         try {
             $ticket = Ticket::where('uuid', $uuid)->with('payment')->firstOrFail();
-
-            if ($this->isPendingTicketExpired($ticket)) {
-                $this->deleteExpiredPendingTicket($ticket);
-
-                return response()->json([
-                    'status' => 'expired',
-                    'message' => 'This pending payment expired after 48 hours. Please start the booking process again.',
-                    'redirect' => route('payment.pending.form')
-                ], 410);
-            }
 
             $payment = $ticket->payment;
             
@@ -825,39 +785,6 @@ class TicketController extends Controller
             ->with('success', $request->boolean('resend_email')
                 ? 'Ticket found. We have resent the ticket email.'
                 : 'Ticket found successfully.');
-    }
-
-    private function isPendingTicketExpired(Ticket $ticket): bool
-    {
-        return $ticket->status === 'pending'
-            && $ticket->created_at !== null
-            && $ticket->created_at->lt(now()->subHours(48));
-    }
-
-    private function deleteExpiredPendingTicket(Ticket $ticket): void
-    {
-        if (!$this->isPendingTicketExpired($ticket)) {
-            return;
-        }
-
-        Log::info('Deleting expired pending ticket', [
-            'ticket_id' => $ticket->id,
-            'ticket_uuid' => $ticket->uuid,
-            'created_at' => $ticket->created_at?->toDateTimeString(),
-        ]);
-
-        $ticket->delete();
-    }
-
-    private function purgeExpiredPendingTickets(): void
-    {
-        $deleted = Ticket::where('status', 'pending')
-            ->where('created_at', '<', now()->subHours(48))
-            ->delete();
-
-        if ($deleted > 0) {
-            Log::info('Purged expired pending tickets', ['count' => $deleted]);
-        }
     }
 
     private function getBookingTickets(Ticket $ticket)

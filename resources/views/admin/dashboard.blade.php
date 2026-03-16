@@ -269,6 +269,9 @@
 
 @section('content')
 <div class="dashboard-wrap">
+    @php
+        $canApproveCheques = auth()->user()?->isFinance();
+    @endphp
     <div class="dash-header">
         <h1 class="dash-title">Dashboard</h1>
     </div>
@@ -417,19 +420,30 @@
                         <div class="list-meta">
                             Submitted {{ $payment->updated_at ? \Carbon\Carbon::parse($payment->updated_at)->format('M d, g:i A') : '-' }}
                         </div>
+                        @if($payment->status !== 'pending')
+                            <div class="list-meta">
+                                Processed by {{ $payment->approvedBy?->name ?? $payment->rejectedBy?->name ?? 'N/A' }}
+                            </div>
+                        @endif
                         <div class="list-actions">
                             @if($ticket)
                                 <a href="{{ route('admin.ticket.detail', $ticket->id) }}" class="btn btn-secondary" style="padding: 6px 10px; font-size: 12px;">Open ticket</a>
                             @endif
-                            <form method="POST" action="{{ route('admin.payments.approve-cheque', $payment->id) }}" onsubmit="return confirm('Are you sure you want to approve this cheque payment? This will mark the ticket as paid and send ticket email(s).');">
-                                @csrf
-                                <button type="submit" class="btn btn-primary" style="padding: 6px 10px; font-size: 12px;">Approve</button>
-                            </form>
-                            <form method="POST" action="{{ route('admin.payments.reject-cheque', $payment->id) }}" onsubmit="return confirm('Are you sure you want to reject this cheque payment? This will mark the ticket as failed.');">
-                                @csrf
-                                <input type="hidden" name="reason" value="Cheque payment rejected from dashboard.">
-                                <button type="submit" class="btn btn-danger" style="padding: 6px 10px; font-size: 12px;">Reject</button>
-                            </form>
+                            @if($canApproveCheques)
+                                <form method="POST" action="{{ route('admin.payments.approve-cheque', $payment->id) }}" onsubmit="return confirm('Are you sure you want to approve this cheque payment? This will mark the ticket as paid and send ticket email(s).');">
+                                    @csrf
+                                    <button type="submit" class="btn btn-primary" style="padding: 6px 10px; font-size: 12px;">Approve</button>
+                                </form>
+                                <form method="POST" action="{{ route('admin.payments.reject-cheque', $payment->id) }}" onsubmit="return confirm('Are you sure you want to reject this cheque payment? This will mark the ticket as failed.');">
+                                    @csrf
+                                    <input type="hidden" name="reason" value="Cheque payment rejected from dashboard.">
+                                    <button type="submit" class="btn btn-danger" style="padding: 6px 10px; font-size: 12px;">Reject</button>
+                                </form>
+                            @else
+                                <button type="button" class="btn btn-primary" style="padding: 6px 10px; font-size: 12px;" disabled>Approve</button>
+                                <button type="button" class="btn btn-danger" style="padding: 6px 10px; font-size: 12px;" disabled>Reject</button>
+                                <div class="list-meta">Only finance admins can approve or reject cheque payments.</div>
+                            @endif
                         </div>
                     </div>
                 @empty
@@ -440,4 +454,3 @@
     </div>
 </div>
 @endsection
-

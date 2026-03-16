@@ -46,7 +46,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/payments/{payment}/reject-cheque', [AdminController::class, 'rejectChequePayment'])->name('payments.reject-cheque');
         Route::get('/validation', [AdminController::class, 'validation'])->name('validation');
         Route::post('/scan', [AdminController::class, 'scanTicket'])->name('scan');
-        
+        Route::get('/users', [AdminController::class, 'users'])->name('users');
+        Route::post('/users', [AdminController::class, 'storeAdmin'])->name('users.store');
+        Route::post('/users/{user}/role', [AdminController::class, 'updateUserRole'])->name('users.role');
         Route::resource('events', EventController::class)->except(['index', 'show']);
         Route::get('/events', [EventController::class, 'index'])->name('events.index');
         Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');

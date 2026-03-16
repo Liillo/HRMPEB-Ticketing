@@ -14,12 +14,15 @@ class Event extends Model
         'description',
         'event_date',
         'location',
+        'poster_path',
         'individual_price',
         'corporate_price',
         'max_capacity',
         'max_corporate_tables',
         'max_corporate_attendees',
         'is_active',
+        'created_by',
+        'updated_by',
     ];
 
     protected $casts = [
@@ -34,6 +37,16 @@ class Event extends Model
     public function tickets()
     {
         return $this->hasMany(Ticket::class);
+    }
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function updatedBy()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
     }
 
     public function paidTickets()
@@ -65,8 +78,7 @@ class Event extends Model
     public function pendingAttendeesCount(?int $ignoreTicketId = null): int
     {
         $query = $this->tickets()
-            ->where('status', 'pending')
-            ->where('created_at', '>=', now()->subHours(48));
+            ->where('status', 'pending');
 
         if ($ignoreTicketId !== null) {
             $query->where('id', '!=', $ignoreTicketId);
@@ -121,7 +133,7 @@ class Event extends Model
 
     public function pendingCorporateTablesCount(?int $ignoreTicketId = null): int
     {
-        return $this->corporateTablesCount('pending', $ignoreTicketId, true);
+        return $this->corporateTablesCount('pending', $ignoreTicketId);
     }
 
     public function remainingCorporateTables(bool $includePending = true, ?int $ignoreTicketId = null): ?int
@@ -159,15 +171,11 @@ class Event extends Model
         return !$this->hasCorporateTableCapacity($includePending);
     }
 
-    private function corporateTablesCount(string $status, ?int $ignoreTicketId = null, bool $pendingOnlyFresh = false): int
+    private function corporateTablesCount(string $status, ?int $ignoreTicketId = null): int
     {
         $query = $this->tickets()
             ->where('type', 'corporate')
             ->where('status', $status);
-
-        if ($pendingOnlyFresh) {
-            $query->where('created_at', '>=', now()->subHours(48));
-        }
 
         if ($ignoreTicketId !== null) {
             $query->where('id', '!=', $ignoreTicketId);

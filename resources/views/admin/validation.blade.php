@@ -7,6 +7,9 @@
 @endpush
 
 @section('content')
+@php
+    $canScan = auth()->user()?->isIct();
+@endphp
 <h1 style="color: var(--color-primary); margin-bottom: 32px;">
     <i class="fas fa-qrcode"></i> Ticket Validation
 </h1>
@@ -19,6 +22,12 @@
 
         <div id="result-message" style="display: none; padding: 16px; border-radius: 8px; margin-bottom: 20px;"></div>
 
+        @if(!$canScan)
+            <div style="color: var(--text-secondary); margin-bottom: 16px;">
+                Only ICT admins can scan or validate tickets. Viewing is enabled, actions are disabled.
+            </div>
+        @endif
+
         <div id="ticket-info" style="display: none; background: var(--color-muted); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
             <h3 style="color: var(--color-primary); margin-bottom: 16px;">
                 <i class="fas fa-ticket-alt"></i> Ticket Information
@@ -27,13 +36,13 @@
         </div>
 
         <div style="margin-bottom: 20px;">
-            <button id="start-scan-btn" class="btn btn-primary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="startScanner()">
+            <button id="start-scan-btn" class="btn btn-primary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="startScanner()" @if(!$canScan) disabled @endif>
                 <i class="fas fa-camera"></i> Start Camera Scanner
             </button>
-            <button id="resume-scan-btn" class="btn btn-warning" style="width: 100%; display: none; margin-top: 10px;" onclick="resumeScanner()">
+            <button id="resume-scan-btn" class="btn btn-warning" style="width: 100%; display: none; margin-top: 10px;" onclick="resumeScanner()" @if(!$canScan) disabled @endif>
                 <i class="fas fa-redo"></i> Resume Camera Scanner
             </button>
-            <button id="stop-scan-btn" class="btn btn-danger" style="width: 100%; display: none; margin-top: 10px;" onclick="stopScanner()">
+            <button id="stop-scan-btn" class="btn btn-danger" style="width: 100%; display: none; margin-top: 10px;" onclick="stopScanner()" @if(!$canScan) disabled @endif>
                 <i class="fas fa-stop"></i> Stop Scanner
             </button>
         </div>
@@ -48,10 +57,10 @@
             <label for="qr-input">
                 <i class="fas fa-keyboard"></i> Enter Ticket UUID or Scan with Barcode Scanner
             </label>
-            <input type="text" id="qr-input" placeholder="Paste UUID or use barcode scanner" autofocus>
+            <input type="text" id="qr-input" placeholder="Paste UUID or use barcode scanner" autofocus @if(!$canScan) disabled @endif>
         </div>
 
-        <button type="button" class="btn btn-secondary" style="width: 100%;" onclick="validateTicketManual()">
+        <button type="button" class="btn btn-secondary" style="width: 100%;" onclick="validateTicketManual()" @if(!$canScan) disabled @endif>
             <i class="fas fa-check"></i> Validate Ticket
         </button>
     </div>
@@ -65,6 +74,7 @@ let scanTimeout;
 let isScanning = false;
 let processingScan = false;
 let scannerPausedAfterRead = false;
+const canScan = {{ $canScan ? 'true' : 'false' }};
 
 document.getElementById('qr-input').addEventListener('input', function(e) {
     clearTimeout(scanTimeout);
@@ -77,6 +87,11 @@ document.getElementById('qr-input').addEventListener('input', function(e) {
 });
 
 async function startScanner() {
+    if (!canScan) {
+        showError('Only ICT admins can scan tickets.');
+        return;
+    }
+
     if (isScanning) {
         return;
     }
@@ -187,6 +202,11 @@ function onScanError(error) {
 }
 
 function validateTicketManual() {
+    if (!canScan) {
+        showError('Only ICT admins can validate tickets.');
+        return;
+    }
+
     const qrCode = document.getElementById('qr-input').value.trim();
     if (!qrCode) {
         showError('Please enter a ticket UUID or scan QR code');

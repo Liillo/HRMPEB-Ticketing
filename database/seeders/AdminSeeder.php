@@ -17,8 +17,8 @@ class AdminSeeder extends Seeder
                 'name' => 'System Admin',
                 'password' => Hash::make('admin123'),
                 'is_admin' => true,
+                'role' => User::ROLE_ICT,
             ]
         );
     }
 }
-

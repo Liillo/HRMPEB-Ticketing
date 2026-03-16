@@ -145,6 +145,11 @@
         z-index: 1;
     }
 
+    .role-muted {
+        font-size: 12px;
+        color: var(--text-secondary);
+    }
+
     @media (max-width: 1440px) {
         .events-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
@@ -164,11 +169,20 @@
 @endpush
 
 @section('content')
+@php
+    $canManageEvents = auth()->user()?->isHr();
+@endphp
 <div class="events-header">
     <h1 style="color: var(--color-primary);"><i class="fas fa-calendar-alt"></i> Events</h1>
-    <a href="{{ route('admin.events.create') }}" class="btn btn-primary">
-        <i class="fas fa-plus"></i> Add New Event
-    </a>
+    @if($canManageEvents)
+        <a href="{{ route('admin.events.create') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add New Event
+        </a>
+    @else
+        <button type="button" class="btn btn-primary" disabled>
+            <i class="fas fa-plus"></i> Add New Event
+        </button>
+    @endif
 </div>
 
 @php
@@ -199,6 +213,9 @@
                         onclick="window.location.href=this.dataset.url"
                     >
                         <div class="event-icon"><i class="fas fa-calendar-alt"></i></div>
+                        @if($event->poster_path)
+                            <img src="{{ asset('storage/' . $event->poster_path) }}" alt="Event Poster" style="width: 100%; height: 140px; object-fit: cover; border-radius: 10px; margin-bottom: 12px;">
+                        @endif
                         <div class="event-title-row">
                             <div class="event-title">{{ $event->name }}</div>
                             <span class="event-status-badge {{ $isSoldOut ? 'event-status-badge--soldout' : 'event-status-badge--open' }}">
@@ -231,22 +248,42 @@
                                 <div class="event-meta-label">Scanned/Unscanned</div>
                                 <div class="event-meta-value">{{ $event->scannedTicketsCount() }} / {{ $event->unscannedTicketsCount() }}</div>
                             </div>
+                            <div>
+                                <div class="event-meta-label">Created By</div>
+                                <div class="event-meta-value">{{ $event->createdBy?->name ?? 'N/A' }}</div>
+                            </div>
+                            <div>
+                                <div class="event-meta-label">Updated By</div>
+                                <div class="event-meta-value">{{ $event->updatedBy?->name ?? 'N/A' }}</div>
+                            </div>
                         </div>
 
                         <div class="event-actions">
-                            <form method="POST" action="{{ route('admin.events.toggle', $event->id) }}" style="display: inline;" onclick="event.stopPropagation();">
-                                @csrf
-                                <button type="submit" class="btn {{ $event->is_active ? 'btn-success' : 'btn-secondary' }}" style="padding: 6px 12px; font-size: 12px;">
-                                    <i class="fas fa-{{ $event->is_active ? 'check-circle' : 'times-circle' }}"></i>
-                                    {{ $event->is_active ? 'Active' : 'Inactive' }}
+                            @if($canManageEvents)
+                                <form method="POST" action="{{ route('admin.events.toggle', $event->id) }}" style="display: inline;" onclick="event.stopPropagation();">
+                                    @csrf
+                                    <button type="submit" class="btn {{ $event->is_active ? 'btn-success' : 'btn-secondary' }}" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fas fa-{{ $event->is_active ? 'check-circle' : 'times-circle' }}"></i>
+                                        {{ $event->is_active ? 'Active' : 'Inactive' }}
+                                    </button>
+                                </form>
+                            @else
+                                <button type="button" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" disabled>
+                                    <i class="fas fa-lock"></i> Toggle Status
                                 </button>
-                            </form>
+                            @endif
                             <a href="{{ route('admin.events.show', $event->id) }}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="event.stopPropagation();">
                                 <i class="fas fa-eye"></i> View
                             </a>
-                            <a href="{{ route('admin.events.edit', $event->id) }}" class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;" onclick="event.stopPropagation();">
-                                <i class="fas fa-edit"></i> Edit
-                            </a>
+                            @if($canManageEvents)
+                                <a href="{{ route('admin.events.edit', $event->id) }}" class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;" onclick="event.stopPropagation();">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            @else
+                                <button type="button" class="btn btn-primary" style="padding: 6px 12px; font-size: 12px;" disabled onclick="event.stopPropagation();">
+                                    <i class="fas fa-lock"></i> Edit
+                                </button>
+                            @endif
                         </div>
                     </div>
                 @endforeach

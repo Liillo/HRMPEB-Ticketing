@@ -351,6 +351,14 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
+
+        .btn[disabled],
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(0.5);
+            box-shadow: none;
+        }
         
         @media (max-width: 768px) {
             .btn {
@@ -555,10 +563,13 @@
                     <i class="fas fa-calendar-alt"></i><span>Events</span>
                 </a></li>
                 <li><a href="{{ route('admin.tickets') }}" class="{{ request()->routeIs('admin.tickets') || request()->routeIs('admin.ticket.detail') ? 'active' : '' }}">
-                    <i class="fas fa-ticket-alt"></i><span>All Tickets</span>
+                    <i class="fas fa-ticket-alt"></i><span>Tickets</span>
                 </a></li>
                 <li><a href="{{ route('admin.validation') }}" class="{{ request()->routeIs('admin.validation') ? 'active' : '' }}">
                     <i class="fas fa-qrcode"></i><span>Scan Tickets</span>
+                </a></li>
+                <li><a href="{{ route('admin.users') }}" class="{{ request()->routeIs('admin.users') ? 'active' : '' }}">
+                    <i class="fas fa-users"></i><span>Admins</span>
                 </a></li>
             </ul>
             <div class="sidebar-footer">

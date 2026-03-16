@@ -15,9 +15,7 @@
                 <p style="text-align: center; color: var(--text-secondary); margin-bottom: 24px;">
                     Enter your email and phone number to resume a pending payment.
                 </p>
-                <div style="margin-bottom: 20px; background: #fff3cd; color: #856404; border: 1px solid #ffeeba; border-radius: 8px; padding: 12px 14px; font-size: 14px;">
-                    Pending payments are available for 48 hours only. After 48 hours, the pending booking expires and you will need to start the booking process again.
-                </div>
+
 
                 <form method="POST" action="{{ route('payment.pending') }}">
                     @csrf

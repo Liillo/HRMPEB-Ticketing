@@ -1,75 +1,92 @@
 @extends('layouts.admin')
 @section('title', 'Create Event')
 @section('content')
+@php
+    $canManageEvents = auth()->user()?->isHr();
+@endphp
 <h1 style="color: var(--color-primary); margin-bottom: 32px;"><i class="fas fa-plus-circle"></i> Create New Event</h1>
 
 <div class="card" style="max-width: 800px;">
-    <form method="POST" action="{{ route('admin.events.store') }}">
+    <form method="POST" action="{{ route('admin.events.store') }}" enctype="multipart/form-data">
         @csrf
-        
-        <div class="form-group">
-            <label for="name"><i class="fas fa-tag"></i> Event Name</label>
-            <input type="text" id="name" name="name" value="{{ old('name') }}" required>
-            @error('name')<span class="error">{{ $message }}</span>@enderror
-        </div>
-        
-        <div class="form-group">
-            <label for="description"><i class="fas fa-align-left"></i> Description</label>
-            <textarea id="description" name="description" rows="4">{{ old('description') }}</textarea>
-            @error('description')<span class="error">{{ $message }}</span>@enderror
-        </div>
-        
-        <div class="form-group">
-            <label for="event_date"><i class="fas fa-calendar"></i> Event Date</label>
-            <input type="date" id="event_date" name="event_date" value="{{ old('event_date') }}" required>
-            @error('event_date')<span class="error">{{ $message }}</span>@enderror
-        </div>
-        
+        @if(!$canManageEvents)
+            <div style="color: var(--text-secondary); margin-bottom: 16px;">
+                Only HR admins can create or update events. You can view details, but actions are disabled.
+            </div>
+        @endif
+
+        <fieldset @if(!$canManageEvents) disabled @endif style="border: 0; padding: 0; margin: 0;">
+            <div class="form-group">
+                <label for="name"><i class="fas fa-tag"></i> Event Name</label>
+                <input type="text" id="name" name="name" value="{{ old('name') }}" required>
+                @error('name')<span class="error">{{ $message }}</span>@enderror
+            </div>
+            
+            <div class="form-group">
+                <label for="description"><i class="fas fa-align-left"></i> Description</label>
+                <textarea id="description" name="description" rows="4">{{ old('description') }}</textarea>
+                @error('description')<span class="error">{{ $message }}</span>@enderror
+            </div>
+            
+            <div class="form-group">
+                <label for="event_date"><i class="fas fa-calendar"></i> Event Date</label>
+                <input type="date" id="event_date" name="event_date" value="{{ old('event_date') }}" required>
+                @error('event_date')<span class="error">{{ $message }}</span>@enderror
+            </div>
+            
         <div class="form-group">
             <label for="location"><i class="fas fa-map-marker-alt"></i> Location</label>
             <input type="text" id="location" name="location" value="{{ old('location') }}">
             @error('location')<span class="error">{{ $message }}</span>@enderror
         </div>
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+
+        <div class="form-group">
+            <label for="poster"><i class="fas fa-image"></i> Event Poster</label>
+            <input type="file" id="poster" name="poster" accept="image/*">
+            <small style="color: var(--text-secondary);">Optional. JPG, PNG, or WebP up to 2MB.</small>
+            @error('poster')<span class="error">{{ $message }}</span>@enderror
+        </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                    <label for="individual_price"><i class="fas fa-user"></i> Individual Price (KES)</label>
+                    <input type="number" id="individual_price" name="individual_price" value="{{ old('individual_price', 1000) }}" required>
+                    @error('individual_price')<span class="error">{{ $message }}</span>@enderror
+                </div>
+                
+                <div class="form-group">
+                    <label for="corporate_price"><i class="fas fa-users"></i> Corporate Price (KES)</label>
+                    <input type="number" id="corporate_price" name="corporate_price" value="{{ old('corporate_price', 40000) }}" required>
+                    @error('corporate_price')<span class="error">{{ $message }}</span>@enderror
+                </div>
+            </div>
+
             <div class="form-group">
-                <label for="individual_price"><i class="fas fa-user"></i> Individual Price (KES)</label>
-                <input type="number" id="individual_price" name="individual_price" value="{{ old('individual_price', 1000) }}" required>
-                @error('individual_price')<span class="error">{{ $message }}</span>@enderror
+                <label for="max_capacity"><i class="fas fa-users"></i> Max Event Capacity</label>
+                <input type="number" id="max_capacity" name="max_capacity" value="{{ old('max_capacity', 100) }}" min="1" required>
+                <small style="color: var(--text-secondary);">Set the maximum number of attendees allowed for this event.</small>
+                @error('max_capacity')<span class="error">{{ $message }}</span>@enderror
+            </div>
+
+            <div class="form-group">
+                <label for="max_corporate_tables"><i class="fas fa-table"></i> Max Corporate Tables</label>
+                <input type="number" id="max_corporate_tables" name="max_corporate_tables" value="{{ old('max_corporate_tables', 10) }}" min="1" required>
+                <small style="color: var(--text-secondary);">Each paid corporate booking uses exactly one table (up to 10 attendees).</small>
+                @error('max_corporate_tables')<span class="error">{{ $message }}</span>@enderror
             </div>
             
             <div class="form-group">
-                <label for="corporate_price"><i class="fas fa-users"></i> Corporate Price (KES)</label>
-                <input type="number" id="corporate_price" name="corporate_price" value="{{ old('corporate_price', 40000) }}" required>
-                @error('corporate_price')<span class="error">{{ $message }}</span>@enderror
+                <label><i class="fas fa-users-cog"></i> Max Corporate Attendees</label>
+                <div style="background: var(--color-muted); border: 1px solid var(--color-border); border-radius: 8px; padding: 12px;">
+                    Fixed at <strong>10 attendees</strong> for all events.
+                </div>
             </div>
-        </div>
-
-        <div class="form-group">
-            <label for="max_capacity"><i class="fas fa-users"></i> Max Event Capacity</label>
-            <input type="number" id="max_capacity" name="max_capacity" value="{{ old('max_capacity', 100) }}" min="1" required>
-            <small style="color: var(--text-secondary);">Set the maximum number of attendees allowed for this event.</small>
-            @error('max_capacity')<span class="error">{{ $message }}</span>@enderror
-        </div>
-
-        <div class="form-group">
-            <label for="max_corporate_tables"><i class="fas fa-table"></i> Max Corporate Tables</label>
-            <input type="number" id="max_corporate_tables" name="max_corporate_tables" value="{{ old('max_corporate_tables', 10) }}" min="1" required>
-            <small style="color: var(--text-secondary);">Each paid corporate booking uses exactly one table (up to 10 attendees).</small>
-            @error('max_corporate_tables')<span class="error">{{ $message }}</span>@enderror
-        </div>
-        
-        <div class="form-group">
-            <label><i class="fas fa-users-cog"></i> Max Corporate Attendees</label>
-            <div style="background: var(--color-muted); border: 1px solid var(--color-border); border-radius: 8px; padding: 12px;">
-                Fixed at <strong>10 attendees</strong> for all events.
+            
+            <div style="display: flex; gap: 12px;">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Create Event</button>
+                <a href="{{ route('admin.events.index') }}" class="btn btn-secondary"><i class="fas fa-times"></i> Cancel</a>
             </div>
-        </div>
-        
-        <div style="display: flex; gap: 12px;">
-            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Create Event</button>
-            <a href="{{ route('admin.events.index') }}" class="btn btn-secondary"><i class="fas fa-times"></i> Cancel</a>
-        </div>
+        </fieldset>
     </form>
 </div>
 @endsection

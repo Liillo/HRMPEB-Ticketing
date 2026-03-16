@@ -24,6 +24,8 @@ class Payment extends Model
         'amount',
         'status',
         'response_description',
+        'approved_by',
+        'rejected_by',
     ];
 
     protected $casts = [
@@ -33,5 +35,15 @@ class Payment extends Model
     public function ticket(): BelongsTo
     {
         return $this->belongsTo(Ticket::class);
+    }
+
+    public function approvedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function rejectedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'rejected_by');
     }
 }

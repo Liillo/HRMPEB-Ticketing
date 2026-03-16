@@ -38,43 +38,44 @@
                     data-href="{{ $eventCardHref }}"
                     onclick="if (this.dataset.href) window.location=this.dataset.href"
                 >
-                    <h2 style="color: var(--color-primary); margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
+                    @if($event->poster_path)
+                        <div class="event-poster">
+                            <img src="{{ asset('storage/' . $event->poster_path) }}" alt="Event Poster">
+                        </div>
+                    @endif
+                    <h2 class="event-title">
                         <i class="fas fa-calendar-alt"></i> {{ $event->name }}
                     </h2>
 
                     @if($event->description)
-                    <p style="color: var(--text-secondary); margin-bottom: 20px; line-height: 1.6;">
-                        {{ \Illuminate\Support\Str::limit($event->description, 120) }}
-                    </p>
+                    <div class="event-description">
+                        {!! nl2br(e($event->description)) !!}
+                    </div>
                     @endif
 
-                    <div style="margin-bottom: 12px; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                    <div class="event-meta-row">
                         <i class="fas fa-calendar" style="color: var(--color-accent);"></i>
                         <strong>Date:</strong> {{ $event->event_date->format('F j, Y') }}
                     </div>
 
                     @if($event->location)
-                    <div style="margin-bottom: 20px; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                    <div class="event-meta-row event-meta-row--location">
                         <i class="fas fa-map-marker-alt" style="color: var(--color-accent);"></i>
                         <strong>Location:</strong> {{ $event->location }}
                     </div>
                     @endif
 
-                    <div style="background: var(--color-muted); padding: 16px; border-radius: 8px; margin-bottom: 20px;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                            <span style="display: flex; align-items: center; gap: 6px;">
-                                <i class="fas fa-user"></i> Individual:
-                            </span>
-                            <strong style="color: var(--color-primary);">KES {{ number_format($event->individual_price, 0) }}</strong>
+                    <div class="event-pricing">
+                        <div class="event-price-row">
+                            <span><i class="fas fa-user"></i> Individual</span>
+                            <strong>KES {{ number_format($event->individual_price, 0) }}</strong>
                         </div>
-                        <div style="display: flex; justify-content: space-between;">
-                            <span style="display: flex; align-items: center; gap: 6px;">
-                                <i class="fas fa-users"></i> Corporate:
-                            </span>
-                            <strong style="color: var(--color-primary);">KES {{ number_format($event->corporate_price, 0) }}</strong>
+                        <div class="event-price-row">
+                            <span><i class="fas fa-users"></i> Corporate</span>
+                            <strong>KES {{ number_format($event->corporate_price, 0) }}</strong>
                         </div>
                         @if($remainingCapacity !== null)
-                        <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--color-border); color: var(--text-secondary); font-size: 14px;">
+                        <div class="event-capacity">
                             <i class="fas fa-users"></i>
                             {{ $remainingCapacity }} slot{{ $remainingCapacity === 1 ? '' : 's' }} left
                         </div>
@@ -119,13 +120,100 @@
 </div>
 
 <style>
+.event-card {
+    padding: 0 0 22px;
+    overflow: visible;
+}
+
+.event-card > *:not(.event-poster) {
+    padding-left: 22px;
+    padding-right: 22px;
+}
+
+.event-poster {
+    width: 100%;
+    background: #f3f3f3;
+    padding: 14px;
+    border-radius: 14px 14px 0 0;
+    overflow: hidden;
+}
+
+.event-poster img {
+    width: 100%;
+    height: auto;
+    max-height: 520px;
+    object-fit: contain;
+    display: block;
+    border-radius: 10px;
+    background: #fff;
+}
+
+.event-title {
+    color: var(--color-primary);
+    margin: 18px 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 24px;
+}
+
+.event-description {
+    color: var(--text-secondary);
+    margin-bottom: 18px;
+    line-height: 1.7;
+    font-size: 15px;
+}
+
+.event-meta-row {
+    margin-bottom: 10px;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.event-meta-row--location {
+    margin-bottom: 18px;
+}
+
+.event-pricing {
+    background: var(--color-muted);
+    padding: 16px;
+    border-radius: 12px;
+    margin: 0 22px 18px;
+}
+
+.event-price-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.event-price-row strong {
+    color: var(--color-primary);
+}
+
+.event-capacity {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--color-border);
+    color: var(--text-secondary);
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.event-card button {
+    margin: 0 22px;
+    max-width: calc(100% - 44px);
+}
+
 .event-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 6px 16px rgba(31, 60, 136, 0.2);
-}
-
-.event-card {
-    transition: transform 0.3s;
 }
 
 .event-card-clickable {
@@ -140,10 +228,10 @@
 
 .events-grid-booking {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 350px));
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
     justify-content: center;
-    gap: 30px;
-    max-width: 1200px;
+    gap: 34px;
+    max-width: 1300px;
     margin: 0 auto;
 }
 

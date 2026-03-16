@@ -26,6 +26,9 @@
 
 @section('content')
 <div style="padding: 24px;">
+    @php
+        $canApproveCheques = auth()->user()?->isFinance();
+    @endphp
     <div style="margin-bottom: 24px;">
         <a href="{{ route('admin.tickets') }}" style="color: var(--color-primary); text-decoration: none;">&larr; Back to All Tickets</a>
     </div>
@@ -189,18 +192,41 @@
                     </p>
                 </div>
 
-                @if(($ticket->payment->method ?? 'mpesa') === \App\Models\Payment::METHOD_CHEQUE && $ticket->payment->status === 'pending')
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <form method="POST" action="{{ route('admin.payments.approve-cheque', $ticket->payment->id) }}" onsubmit="return confirm('Are you sure you want to approve this cheque payment? This will mark the ticket as paid and send ticket email(s).');">
-                        @csrf
-                        <button type="submit" class="btn btn-primary">Approve Cheque</button>
-                    </form>
-                    <form method="POST" action="{{ route('admin.payments.reject-cheque', $ticket->payment->id) }}" onsubmit="return confirm('Are you sure you want to reject this cheque payment? This will mark the ticket as failed.');">
-                        @csrf
-                        <input type="text" name="reason" placeholder="Optional rejection reason" style="padding: 8px; border: 1px solid var(--color-border); border-radius: 6px; margin-right: 8px;">
-                        <button type="submit" class="btn btn-danger">Reject Cheque</button>
-                    </form>
+                <div style="margin-bottom: 16px;">
+                    <label style="color: var(--text-secondary); font-size: 14px;">Processed By</label>
+                    <p style="margin-top: 4px;">
+                        @if($ticket->payment->status === 'success')
+                            {{ $ticket->payment->approvedBy?->name ?? 'N/A' }}
+                        @elseif($ticket->payment->status === 'failed')
+                            {{ $ticket->payment->rejectedBy?->name ?? 'N/A' }}
+                        @else
+                            N/A
+                        @endif
+                    </p>
                 </div>
+
+                @if(($ticket->payment->method ?? 'mpesa') === \App\Models\Payment::METHOD_CHEQUE && $ticket->payment->status === 'pending')
+                    @if($canApproveCheques)
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <form method="POST" action="{{ route('admin.payments.approve-cheque', $ticket->payment->id) }}" onsubmit="return confirm('Are you sure you want to approve this cheque payment? This will mark the ticket as paid and send ticket email(s).');">
+                            @csrf
+                            <button type="submit" class="btn btn-primary">Approve Cheque</button>
+                        </form>
+                        <form method="POST" action="{{ route('admin.payments.reject-cheque', $ticket->payment->id) }}" onsubmit="return confirm('Are you sure you want to reject this cheque payment? This will mark the ticket as failed.');">
+                            @csrf
+                            <input type="text" name="reason" placeholder="Optional rejection reason" style="padding: 8px; border: 1px solid var(--color-border); border-radius: 6px; margin-right: 8px;">
+                            <button type="submit" class="btn btn-danger">Reject Cheque</button>
+                        </form>
+                    </div>
+                    @else
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 8px;">
+                        <button type="button" class="btn btn-primary" disabled>Approve Cheque</button>
+                        <button type="button" class="btn btn-danger" disabled>Reject Cheque</button>
+                    </div>
+                    <div style="color: var(--text-secondary); font-size: 13px;">
+                        Only finance admins can approve or reject cheque payments.
+                    </div>
+                    @endif
                 @endif
             </div>
             @endif
@@ -241,6 +267,3 @@
     </div>
 </div>
 @endsection
-
-
-

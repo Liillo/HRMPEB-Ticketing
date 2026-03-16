@@ -16,6 +16,11 @@
 
 <div class="card" style="margin-bottom: 20px;">
     <h2 style="margin-bottom: 14px;"><i class="fas fa-info-circle"></i> Event Details</h2>
+    @if($event->poster_path)
+        <div style="margin-bottom: 16px;">
+            <img src="{{ asset('storage/' . $event->poster_path) }}" alt="Event Poster" style="width: 100%; max-width: 520px; border-radius: 12px; border: 1px solid var(--color-border);">
+        </div>
+    @endif
     <div class="event-details-grid">
         <div>
             <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">Date</div>
@@ -52,6 +57,14 @@
             <div class="{{ $eventStatusClass }}" style="font-weight: 700;">
                 {{ $stats['is_sold_out'] ? 'Sold Out' : $stats['remaining_capacity'] . ' slots left' }}
             </div>
+        </div>
+        <div>
+            <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">Created By</div>
+            <div style="font-weight: 600;">{{ $event->createdBy?->name ?? 'N/A' }}</div>
+        </div>
+        <div>
+            <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">Last Updated By</div>
+            <div style="font-weight: 600;">{{ $event->updatedBy?->name ?? 'N/A' }}</div>
         </div>
     </div>
 </div>
