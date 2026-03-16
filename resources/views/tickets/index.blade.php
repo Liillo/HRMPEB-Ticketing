@@ -88,7 +88,7 @@
 
                     @if($isSoldOut)
                     <p style="margin-top: 10px; font-size: 13px; color: var(--text-secondary); text-align: center;">
-                        All available slots are currently taken. Please check with the event organizers for latest updates.
+                        All available slots are currently taken. Please contact us for latest updates.
                     </p>
                     @endif
                 </div>
