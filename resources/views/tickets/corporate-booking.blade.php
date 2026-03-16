@@ -111,7 +111,7 @@
                         <span>
                             <strong>{{ $event->name }}</strong> - Corporate ticket price is 
                             <strong>KES {{ number_format($event->corporate_price, 0) }}</strong> 
-                            regardless of number of attendees (maximum 10 people). One paid booking = one table.
+                            regardless of number of attendees per table (maximum 10 people). One paid booking = one table.
                         </span>
                     </p>
                 </div>
