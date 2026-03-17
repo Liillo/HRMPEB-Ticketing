@@ -568,9 +568,11 @@
                 <li><a href="{{ route('admin.validation') }}" class="{{ request()->routeIs('admin.validation') ? 'active' : '' }}">
                     <i class="fas fa-qrcode"></i><span>Scan Tickets</span>
                 </a></li>
-                <li><a href="{{ route('admin.users') }}" class="{{ request()->routeIs('admin.users') ? 'active' : '' }}">
-                    <i class="fas fa-users"></i><span>Admins</span>
-                </a></li>
+                @if(auth()->user()?->isIct())
+                    <li><a href="{{ route('admin.users') }}" class="{{ request()->routeIs('admin.users') ? 'active' : '' }}">
+                        <i class="fas fa-users"></i><span>Admins</span>
+                    </a></li>
+                @endif
             </ul>
             <div class="sidebar-footer">
                 <form method="POST" action="{{ route('admin.logout') }}">
